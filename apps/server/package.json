@@ -1,0 +1,45 @@
+{
+  "name": "server",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev:server": "ts-node ./src/index.ts",
+    "dev:worker": "ts-node ./src/index-worker.ts",
+    "dev:dashboard": "vite --clearScreen false",
+    "dev": "concurrently --kill-others npm:dev:*",
+    "build": "tsc",
+    "build:dashboard": "vite build",
+    "start:server": "node ./dist/index.js",
+    "start:worker": "node ./dist/index-worker.js",
+    "start": "concurrently npm:start:*"
+  },
+  "dependencies": {
+    "@tiptap/extension-floating-menu": "^3.20.4",
+    "@tiptap/extension-image": "^3.20.4",
+    "@tiptap/extension-link": "^3.20.4",
+    "@tiptap/extension-table": "^3.20.4",
+    "@tiptap/extension-table-cell": "^3.20.4",
+    "@tiptap/extension-table-header": "^3.20.4",
+    "@tiptap/extension-table-row": "^3.20.4",
+    "@tiptap/extension-text-style": "^3.20.4",
+    "@tiptap/extension-youtube": "^3.20.4",
+    "@tiptap/pm": "^3.20.4",
+    "@tiptap/react": "^3.20.4",
+    "@tiptap/starter-kit": "^3.20.4",
+    "@vendure/asset-server-plugin": "3.5.5",
+    "@vendure/core": "3.5.5",
+    "@vendure/dashboard": "3.5.5",
+    "@vendure/email-plugin": "3.5.5",
+    "@vendure/graphiql-plugin": "3.5.5",
+    "dotenv": "17.3.1",
+    "pg": "8.20.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@vendure/cli": "3.5.5",
+    "concurrently": "9.2.1",
+    "ts-node": "10.9.2",
+    "typescript": "5.8.2"
+  }
+}
