@@ -1,0 +1,3 @@
+.next/dev/types/app/layout.ts(5,15): error TS2305: Module '"next/dist/build/segment-config/app/app-segment-config.js"' has no exported member 'InstantConfigForTypeCheckInternal'.
+.next/dev/types/app/page.ts(5,15): error TS2305: Module '"next/dist/build/segment-config/app/app-segment-config.js"' has no exported member 'InstantConfigForTypeCheckInternal'.
+.next/dev/types/app/product/[slug]/page.ts(5,15): error TS2305: Module '"next/dist/build/segment-config/app/app-segment-config.js"' has no exported member 'InstantConfigForTypeCheckInternal'.
