@@ -81,11 +81,11 @@ export const config: VendureConfig = {
             templateLoader: new FileBasedTemplateLoader(path.join(__dirname, '../static/email/templates')),
             globalTemplateVars: {
                 // The following variables will change depending on your storefront implementation.
-                // Here we are assuming a storefront running at http://localhost:8080.
+                // Here we are assuming a storefront running at http://localhost:3001.
                 fromAddress: '"example" <noreply@example.com>',
-                verifyEmailAddressUrl: 'http://localhost:8080/verify',
-                passwordResetUrl: 'http://localhost:8080/password-reset',
-                changeEmailAddressUrl: 'http://localhost:8080/verify-email-address-change'
+                verifyEmailAddressUrl: 'http://localhost:3001/verify',
+                passwordResetUrl: 'http://localhost:3001/password-reset',
+                changeEmailAddressUrl: 'http://localhost:3001/verify-email-address-change'
             },
         }),
         DashboardPlugin.init({
