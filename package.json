@@ -18,10 +18,10 @@
     "postinstall": "patch-package"
   },
   "devDependencies": {
-    "concurrently": "^9.0.0",
-    "patch-package": "^8.0.1"
+    "concurrently": "^9.0.0"
   },
   "dependencies": {
-    "@vendure/dashboard": "^3.5.5"
+    "@vendure/dashboard": "^3.5.5",
+    "patch-package": "^8.0.1"
   }
 }
