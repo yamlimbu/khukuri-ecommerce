@@ -15,12 +15,12 @@ export function Navbar() {
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-16">
                     <div className="flex items-center gap-8">
-                        {/* <Link href="/" className="text-xl font-bold">
+                        <Link href="/" className="text-xl font-bold">
                             <span className="text-2xl font-serif font-extrabold tracking-widest text-emerald-500 uppercase">
                                 KHUKURI HOUSE
                             </span>
-                        </Link> */}
-                        <Link href="/" className="block">
+                        </Link>
+                        {/* <Link href="/" className="block">
                             <Image
                                 src="/khukuri-house-khhi-logo-low.jpg"
                                 alt="Khukuri House"
@@ -28,7 +28,7 @@ export function Navbar() {
                                 height={40}
                                 priority
                             />
-                        </Link>
+                        </Link> */}
                         <nav className="hidden md:flex items-center gap-6">
                             <Suspense>
                                 <NavbarCollections />

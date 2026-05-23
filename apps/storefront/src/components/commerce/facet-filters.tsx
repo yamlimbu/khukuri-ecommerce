@@ -89,7 +89,7 @@ export  function FacetFilters({ productDataPromise }: FacetFiltersProps) {
                 )}
             </div>
 
-            {Object.entries(facetGroups).map(([facetName, facet]) => (
+            {Object.entries(facetGroups).filter(([facetName]) => facetName.toLowerCase() !== 'brand').map(([facetName, facet]) => (
                 <div key={facet.id} className="space-y-3">
                     <h3 className="font-medium text-sm">{facetName}</h3>
                     <div className="space-y-2">

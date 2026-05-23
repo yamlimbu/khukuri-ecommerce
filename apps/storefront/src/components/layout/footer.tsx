@@ -1,25 +1,26 @@
-import {cacheLife} from 'next/cache';
-import {getTopCollections} from '@/lib/vendure/cached';
-import Image from "next/image";
+import { cacheLife } from 'next/cache';
+import { getTopCollections } from '@/lib/vendure/cached';
 import Link from "next/link";
 
-
 async function Copyright() {
-    'use cache'
+    'use cache';
     cacheLife('days');
+
+    const shopName = process.env.NEXT_PUBLIC_SHOP_NAME ?? 'Khukuri House';
 
     return (
         <div>
-            © {new Date().getFullYear()} Vendure Store. All rights reserved.
+            © {new Date().getFullYear()} {shopName}. All rights reserved.
         </div>
-    )
+    );
 }
 
 export async function Footer() {
-    'use cache'
+    'use cache';
     cacheLife('days');
 
     const collections = await getTopCollections();
+    const shopName = process.env.NEXT_PUBLIC_SHOP_NAME ?? 'Khukuri House';
 
     return (
         <footer className="border-t border-border bg-card text-card-foreground mt-auto">
@@ -27,7 +28,7 @@ export async function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
                         <p className="text-sm font-semibold mb-4 uppercase tracking-wider">
-                            Vendure Store
+                            {shopName}
                         </p>
                     </div>
 
@@ -48,66 +49,24 @@ export async function Footer() {
                     </div>
 
                     <div>
-                        <h4 className="text-sm font-semibold mb-4">Vendure</h4>
+                        <p className="text-sm font-semibold mb-4">Categories</p>
                         <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li>
-                                <a
-                                    href="https://github.com/vendure-ecommerce"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="hover:text-emerald-500 transition-colors"
-                                >
-                                    GitHub
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="https://docs.vendure.io"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="hover:text-emerald-500 transition-colors"
-                                >
-                                    Documentation
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="https://github.com/vendure-ecommerce/vendure"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="hover:text-emerald-500 transition-colors"
-                                >
-                                    Source code
-                                </a>
-                            </li>
+                            {collections.map((collection) => (
+                                <li key={collection.id}>
+                                    <Link
+                                        href={`/collection/${collection.slug}`}
+                                        className="hover:text-emerald-500 transition-colors"
+                                    >
+                                        {collection.name}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
                 </div>
 
-                {/* Bottom Section */}
-                <div
-                    className="mt-12 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-zinc-500">
-                    <Copyright/>
-                    <div className="flex items-center gap-2">
-                        <span>Powered by</span>
-                        <a
-                            href="https://vendure.io"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-foreground transition-colors"
-                        >
-                            <Image src="/vendure.svg" alt="Vendure" width={40} height={27} className="h-4 w-auto dark:invert" />
-                        </a>
-                        <span>&</span>
-                        <a
-                            href="https://nextjs.org"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-foreground transition-colors"
-                        >
-                            <Image src="/next.svg" alt="Next.js" width={16} height={16} className="h-5 w-auto dark:invert" />
-                        </a>
-                    </div>
+                <div className="mt-12 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-zinc-500">
+                    <Copyright />
                 </div>
             </div>
         </footer>

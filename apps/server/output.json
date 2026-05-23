@@ -1,0 +1,92 @@
+[
+  {
+    "option_group_code": "curvy-monitor-monitor-size",
+    "pog_id": 4,
+    "product_slug": "curvy-monitor",
+    "product_name": "Curvy Monitor"
+  },
+  {
+    "option_group_code": "high-performance-ram-size",
+    "pog_id": 5,
+    "product_slug": "high-performance-ram",
+    "product_name": "High Performance RAM"
+  },
+  {
+    "option_group_code": "gaming-pc-cpu",
+    "pog_id": 6,
+    "product_slug": "gaming-pc",
+    "product_name": "Gaming PC"
+  },
+  {
+    "option_group_code": "gaming-pc-hdd",
+    "pog_id": 7,
+    "product_slug": "gaming-pc",
+    "product_name": "Gaming PC"
+  },
+  {
+    "option_group_code": "hard-drive-hdd",
+    "pog_id": 8,
+    "product_slug": "hard-drive",
+    "product_name": "Hard Drive"
+  },
+  {
+    "option_group_code": "laptop-screen-size",
+    "pog_id": 1,
+    "product_slug": "current-issue-bsi-khukuri",
+    "product_name": "Current Issue BSI Khukuri"
+  },
+  {
+    "option_group_code": "laptop-ram",
+    "pog_id": 2,
+    "product_slug": "current-issue-bsi-khukuri",
+    "product_name": "Current Issue BSI Khukuri"
+  },
+  {
+    "option_group_code": "freerun-running-shoe-size",
+    "pog_id": 10,
+    "product_slug": "freerun-running-shoe",
+    "product_name": "Freerun Running Shoe"
+  },
+  {
+    "option_group_code": "pureboost-running-shoe-size",
+    "pog_id": 12,
+    "product_slug": "pureboost-running-shoe",
+    "product_name": "Pureboost Running Shoe"
+  },
+  {
+    "option_group_code": "runx-running-shoe-size",
+    "pog_id": 13,
+    "product_slug": "runx-running-shoe",
+    "product_name": "RunX Running Shoe"
+  },
+  {
+    "option_group_code": "hi-top-basketball-shoe-size",
+    "pog_id": 11,
+    "product_slug": "hi-top-basketball-shoe",
+    "product_name": "Hi-Top Basketball Shoe"
+  },
+  {
+    "option_group_code": "ultraboost-running-shoe-size",
+    "pog_id": 9,
+    "product_slug": "ultraboost-running-shoe",
+    "product_name": "Ultraboost Running Shoe"
+  },
+  {
+    "option_group_code": "tablet-storage",
+    "pog_id": 3,
+    "product_slug": "operation-iraqi-freedom-kukri-knife",
+    "product_name": "Operation Iraqi Freedom Kukri Knife"
+  },
+  {
+    "option_group_code": "allstar-sneakers-size",
+    "pog_id": 14,
+    "product_slug": "hanshee-thumb",
+    "product_name": "Hanshee Thumb"
+  },
+  {
+    "option_group_code": "dbad-zombie-slayer",
+    "pog_id": 15,
+    "product_slug": "dbad-zombie-slayer",
+    "product_name": "dbad Zombie Slayer"
+  }
+]

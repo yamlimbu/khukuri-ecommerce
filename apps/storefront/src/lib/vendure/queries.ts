@@ -8,6 +8,10 @@ export const GetTopCollectionsQuery = graphql(`
                 id
                 name
                 slug
+                featuredAsset {
+                    id
+                    preview
+                }
             }
         }
     }

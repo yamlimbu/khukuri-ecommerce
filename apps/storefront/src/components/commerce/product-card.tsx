@@ -15,9 +15,9 @@ export function ProductCard({product: productProp}: ProductCardProps) {
     return (
         <Link
             href={`/product/${product.slug}`}
-            className="group block bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800 hover:border-emerald-700/50 hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] transition-all"
+            className="group block bg-card rounded-lg overflow-hidden border border-border hover:border-emerald-700/50 hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] transition-all"
         >
-            <div className="aspect-square relative bg-zinc-950">
+            <div className="aspect-square relative bg-muted/30">
                 {product.productAsset ? (
                     <Image
                         src={product.productAsset.preview}
@@ -27,17 +27,17 @@ export function ProductCard({product: productProp}: ProductCardProps) {
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center text-zinc-600">
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                         No image
                     </div>
                 )}
             </div>
             <div className="p-4 space-y-2">
-                <h3 className="font-serif font-semibold text-zinc-100 line-clamp-2 group-hover:text-emerald-500 transition-colors">
+                <h3 className="font-serif font-semibold text-card-foreground line-clamp-2 group-hover:text-emerald-500 transition-colors">
                     {product.productName}
                 </h3>
-                <Suspense fallback={<div className="h-8 w-36 rounded bg-zinc-800"></div>}>
-                    <p className="text-xl font-bold text-emerald-500">
+                <Suspense fallback={<div className="h-8 w-36 rounded bg-muted"></div>}>
+                    <p className="text-xl font-bold text-emerald-600 dark:text-emerald-500">
                         {product.priceWithTax.__typename === 'PriceRange' ? (
                             product.priceWithTax.min !== product.priceWithTax.max ? (
                                 <>

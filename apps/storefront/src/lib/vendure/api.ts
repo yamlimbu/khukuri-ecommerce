@@ -1,6 +1,6 @@
-import type {TadaDocumentNode} from 'gql.tada';
-import {print} from 'graphql';
-import {getAuthToken} from '@/lib/auth';
+import type { TadaDocumentNode } from 'gql.tada';
+import { print } from 'graphql';
+import { getAuthToken } from '@/lib/auth';
 
 const VENDURE_API_URL = process.env.VENDURE_SHOP_API_URL || process.env.NEXT_PUBLIC_VENDURE_SHOP_API_URL;
 const VENDURE_CHANNEL_TOKEN = process.env.VENDURE_CHANNEL_TOKEN || process.env.NEXT_PUBLIC_VENDURE_CHANNEL_TOKEN || '__default_channel__';
@@ -21,7 +21,7 @@ interface VendureRequestOptions {
 
 interface VendureResponse<T> {
     data?: T;
-    errors?: Array<{ message: string; [key: string]: unknown }>;
+    errors?: Array<{ message: string;[key: string]: unknown }>;
 }
 
 /**
@@ -75,7 +75,7 @@ export async function query<TResult, TVariables>(
             query: print(document),
             variables: variables || {},
         }),
-        ...(tags && {next: {tags}}),
+        ...(tags && { next: { tags } }),
     });
 
     if (!response.ok) {
@@ -96,7 +96,7 @@ export async function query<TResult, TVariables>(
 
     return {
         data: result.data,
-        ...(newToken && {token: newToken}),
+        ...(newToken && { token: newToken }),
     };
 }
 

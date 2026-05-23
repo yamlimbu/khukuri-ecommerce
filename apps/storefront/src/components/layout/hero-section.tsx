@@ -1,36 +1,44 @@
 import * as React from "react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { HeroCarousel, HeroBanner } from "./hero-carousel";
+
+// You can fetch these from Vendure or a CMS later.
+// If you set this array to empty [], it will show the default Genuine Gurkha Kukri Knives banner.
+const mockBanners: HeroBanner[] = [
+    {
+        id: "1",
+        title: "Genuine Gurkha Kukri Knives",
+        subtitle: "Hand forged in Nepal by traditional Kamis since 1991. Official Army Kukri maker and exporter.",
+        primaryButtonLabel: "Shop Traditional Knives",
+        primaryButtonLink: "/search",
+        secondaryButtonLabel: "View Modern Selection",
+        secondaryButtonLink: "/search?q=modern",
+        image: "https://www.thekhukurihouse.com/public/images/upload/product/echo-predator-kukri.jpg"
+    },
+    {
+        id: "2",
+        title: "New Arrivals for 2026",
+        subtitle: "Discover our latest collection of premium forged blades perfect for outdoor adventures.",
+        primaryButtonLabel: "Explore New Arrivals",
+        primaryButtonLink: "/search",
+        image: "https://www.thekhukurihouse.com/public/images/upload/product/extraimages/echo-the-predator.jpg"
+    },
+    {
+        id: "3",
+        title: "Custom Engravings Available",
+        subtitle: "Make your Kukri truly unique with our personalized engraving service directly from Kathmandu.",
+        primaryButtonLabel: "Learn More",
+        primaryButtonLink: "/search",
+        image: "https://www.thekhukurihouse.com/public/images/upload/product/extraimages/predator-kukri-sword.jpg"
+    }
+];
 
 export function HeroSection() {
     return (
-        <section className="relative bg-zinc-950 overflow-hidden border-b border-zinc-800">
+        <section className="relative bg-background overflow-hidden border-b border-border">
             {/* Background Pattern/Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black opacity-90" />
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-background dark:from-zinc-900 dark:via-zinc-950 dark:to-black opacity-90" />
 
-            <div className="relative text-zinc-100 container mx-auto px-4 py-16 md:py-24 flex flex-col items-center justify-center text-center">
-                <div className="max-w-4xl mx-auto space-y-6">
-                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold tracking-tight mb-4 text-emerald-500 drop-shadow-md uppercase">
-                        Genuine Gurkha Kukri Knives
-                    </h1>
-                    <p className="text-xl md:text-2xl text-zinc-300 max-w-2xl mx-auto">
-                        Hand forged in Nepal by traditional Kamis since 1991. Official Army Kukri maker and exporter.
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
-                        <Button asChild size="lg" className="min-w-[220px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg border-2 border-emerald-700 shadow-lg">
-                            <Link href="/search">
-                                Shop Traditional Knives
-                            </Link>
-                        </Button>
-                        <Button asChild variant="outline" size="lg" className="min-w-[220px] border-zinc-700 text-zinc-200 hover:bg-zinc-800 hover:text-white font-semibold">
-                            <Link href="/search?q=modern">
-                                View Modern Selection
-                            </Link>
-                        </Button>
-                    </div>
-                </div>
-            </div>
+            <HeroCarousel banners={mockBanners} />
         </section>
     );
 }
