@@ -5,15 +5,17 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { XCircle, CheckCircle } from 'lucide-react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { verifyAccountAction } from './actions';
 
 type VerifyResultType = { success?: boolean; error?: string };
 
-export function VerifyContent() {
-    const searchParams = useSearchParams();
+type VerifyContentProps = {
+    token: string | null;
+};
+
+export function VerifyContent({ token }: VerifyContentProps) {
     const router = useRouter();
-    const token = searchParams.get('token');
 
     const [result, setResult] = useState<VerifyResultType | null>(null);
     const [loading, setLoading] = useState(true);

@@ -27,12 +27,16 @@ function VerifyLoading() {
     );
 }
 
-export default function VerifyPage({searchParams}: PageProps<'/verify'>) {
+export default async function VerifyPage({searchParams}: PageProps<'/verify'>) {
+    const resolvedParams = await searchParams;
+    const tokenParam = resolvedParams?.token;
+    const token = tokenParam && typeof tokenParam === 'string' ? tokenParam : Array.isArray(tokenParam) ? tokenParam[0] : null;
+
     return (
         <div className="flex min-h-screen items-center justify-center px-4">
             <div className="w-full max-w-md space-y-6">
                 <Suspense fallback={<VerifyLoading/>}>
-                    <VerifyContent />
+                    <VerifyContent token={token} />
                 </Suspense>
             </div>
         </div>
