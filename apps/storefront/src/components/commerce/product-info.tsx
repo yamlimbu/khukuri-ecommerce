@@ -147,10 +147,7 @@ export function ProductInfo({product, searchParams}: ProductInfoProps) {
                 )}
             </div>
 
-            {/* Product Description */}
-            <div className="prose prose-sm max-w-none">
-                <div dangerouslySetInnerHTML={{__html: product.description}}/>
-            </div>
+            
 
             {/* Option Groups */}
             {product.optionGroups.length > 0 && (
@@ -232,6 +229,13 @@ export function ProductInfo({product, searchParams}: ProductInfoProps) {
                     SKU: {selectedVariant.sku}
                 </div>
             )}
+
+            {/* Product Description */}
+            <div className="prose prose-sm max-w-none">
+                <div dangerouslySetInnerHTML={{__html: product.description}}/>
+            </div>
+
+            
         </div>
     );
 }

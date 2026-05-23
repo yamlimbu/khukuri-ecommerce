@@ -97,30 +97,36 @@ export async function transitionToArrangingPayment() {
 }
 
 export async function placeOrder(paymentMethodCode: string) {
-    // First, transition the order to ArrangingPayment state
-    await transitionToArrangingPayment();
-
-    // Prepare metadata based on payment method
     const metadata: Record<string, unknown> = {};
 
-    // For standard payment, include the required fields
     if (paymentMethodCode === 'standard-payment') {
         metadata.shouldDecline = false;
         metadata.shouldError = false;
         metadata.shouldErrorOnSettle = false;
     }
 
-    // Add payment to the order
-    const result = await mutate(
-        AddPaymentToOrderMutation,
-        {
-            input: {
-                method: paymentMethodCode,
-                metadata,
+    const addPayment = async () =>
+        await mutate(
+            AddPaymentToOrderMutation,
+            {
+                input: {
+                    method: paymentMethodCode,
+                    metadata,
+                },
             },
-        },
-        {useAuthToken: true}
-    );
+            {useAuthToken: true}
+        );
+
+    let result = await addPayment();
+
+    if (result.data.addPaymentToOrder.__typename !== 'Order') {
+        const errorResult = result.data.addPaymentToOrder;
+
+        if (errorResult.errorCode === 'ORDER_PAYMENT_STATE_ERROR') {
+            await transitionToArrangingPayment();
+            result = await addPayment();
+        }
+    }
 
     if (result.data.addPaymentToOrder.__typename !== 'Order') {
         const errorResult = result.data.addPaymentToOrder;
@@ -131,7 +137,6 @@ export async function placeOrder(paymentMethodCode: string) {
 
     const orderCode = result.data.addPaymentToOrder.code;
 
-    // Update the cart tag to immediately invalidate cached cart data
     updateTag('cart');
     updateTag('active-order');
 
