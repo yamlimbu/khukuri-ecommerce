@@ -31,7 +31,6 @@ const mockBanners: HeroBanner[] = [
         image: "https://www.thekhukurihouse.com/public/images/upload/product/extraimages/predator-kukri-sword.jpg"
     }
 ];
-
 export function HeroSection() {
     return (
         <section className="relative bg-background overflow-hidden border-b border-border">
