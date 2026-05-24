@@ -7,7 +7,7 @@ import {VerifyContent} from './verify-content';
 
 export default function VerifyPage() {
     const searchParams = useSearchParams();
-    const tokenParam = searchParams.get('token');
+    const tokenParam = searchParams?.get('token');
     const token = tokenParam ?? null;
 
     return (
