@@ -7,8 +7,6 @@ export const metadata: Metadata = {
     title: 'Addresses',
 };
 
-export const dynamic = 'force-dynamic';
-
 export default async function AddressesPage(_props: PageProps<'/account/addresses'>) {
     const [addressesResult, countriesResult] = await Promise.all([
         query(GetCustomerAddressesQuery, {}, { useAuthToken: true }),
