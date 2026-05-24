@@ -2,6 +2,8 @@ import { cacheLife } from "next/cache";
 import { query } from "@/lib/vendure/api";
 import { SearchProductsQuery } from "@/lib/vendure/queries";
 import { ProductCard } from "./product-card";
+import { ProductCardFragment } from "@/lib/vendure/fragments";
+import { FragmentOf, readFragment } from "@/graphql";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
@@ -13,7 +15,7 @@ export async function TopViewedProducts() {
         input: { take: 10, groupByProduct: true }
     });
 
-    const products = result.data.search.items;
+    const products = result.data.search.items as Array<FragmentOf<typeof ProductCardFragment>>;
 
     if (!products || products.length === 0) {
         return null;
@@ -33,11 +35,14 @@ export async function TopViewedProducts() {
                 </div>
 
                 <div className="flex overflow-x-auto gap-6 pb-6 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {products.map((product) => (
-                        <div key={product.productId} className="flex-none w-64 md:w-72 snap-start">
-                            <ProductCard product={product} />
-                        </div>
-                    ))}
+                    {products.map((product) => {
+                        const productFragment = readFragment(ProductCardFragment, product);
+                        return (
+                            <div key={productFragment.productId} className="flex-none w-64 md:w-72 snap-start">
+                                <ProductCard product={product} />
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </section>
