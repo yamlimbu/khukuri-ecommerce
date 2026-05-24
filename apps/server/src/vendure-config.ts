@@ -14,6 +14,7 @@ import path from 'path';
 import { CustomAdminUiPlugin } from './plugins/custom-ui/custom-ui.plugin';
 
 const IS_DEV = process.env.APP_ENV === 'dev';
+const useDbSync = process.env.VENDURE_DB_SYNC === 'true' || IS_DEV;
 const serverPort = +process.env.PORT || 3000;
 
 export const config: VendureConfig = {
@@ -44,8 +45,8 @@ export const config: VendureConfig = {
         type: 'postgres',
         // See the README.md "Migrations" section for an explanation of
         // the `synchronize` and `migrations` options.
-        synchronize: false,
-        migrations: [path.join(__dirname, './migrations/*.+(js|ts)')],
+        synchronize: useDbSync,
+        migrations: useDbSync ? [] : [path.join(__dirname, './migrations/*.+(js|ts)')],
         logging: false,
         database: process.env.DB_NAME,
         schema: process.env.DB_SCHEMA,
