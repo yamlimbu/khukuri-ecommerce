@@ -1,14 +1,13 @@
 import type {Metadata} from 'next';
 import { query } from '@/lib/vendure/api';
+import { GetCustomerAddressesQuery, GetAvailableCountriesQuery } from '@/lib/vendure/queries';
+import { AddressesClient } from './addresses-client';
 
 export const metadata: Metadata = {
     title: 'Addresses',
 };
 
 export const dynamic = 'force-dynamic';
-
-import { GetCustomerAddressesQuery, GetAvailableCountriesQuery } from '@/lib/vendure/queries';
-import { AddressesClient } from './addresses-client';
 
 export default async function AddressesPage(_props: PageProps<'/account/addresses'>) {
     const [addressesResult, countriesResult] = await Promise.all([
