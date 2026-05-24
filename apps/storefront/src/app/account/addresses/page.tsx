@@ -4,6 +4,9 @@ import { query } from '@/lib/vendure/api';
 export const metadata: Metadata = {
     title: 'Addresses',
 };
+
+export const dynamic = 'force-dynamic';
+
 import { GetCustomerAddressesQuery, GetAvailableCountriesQuery } from '@/lib/vendure/queries';
 import { AddressesClient } from './addresses-client';
 

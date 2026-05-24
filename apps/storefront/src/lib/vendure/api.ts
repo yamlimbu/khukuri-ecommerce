@@ -11,6 +11,10 @@ if (!VENDURE_API_URL) {
     throw new Error('VENDURE_SHOP_API_URL or NEXT_PUBLIC_VENDURE_SHOP_API_URL environment variable is not set');
 }
 
+if (process.env.VERCEL === '1' && VENDURE_API_URL.startsWith('http://localhost')) {
+    throw new Error('VENDURE_SHOP_API_URL is set to localhost in Vercel. Use a publicly reachable Vendure API URL instead of http://localhost:3000/shop-api');
+}
+
 interface VendureRequestOptions {
     token?: string;
     useAuthToken?: boolean;
