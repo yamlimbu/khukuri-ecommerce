@@ -1,14 +1,17 @@
-"use client";
-
-import {useSearchParams} from 'next/navigation';
+import type {Metadata} from 'next';
 import {Card, CardContent} from '@/components/ui/card';
 import {Loader2} from 'lucide-react';
 import {VerifyContent} from './verify-content';
 
-export default function VerifyPage() {
-    const searchParams = useSearchParams();
-    const tokenParam = searchParams?.get('token');
-    const token = tokenParam ?? null;
+export const metadata: Metadata = {
+    title: 'Verify Email',
+    description: 'Verify your email address to complete registration.',
+};
+
+export default async function VerifyPage({ searchParams }: PageProps<'/verify'>) {
+    const resolvedParams = await searchParams;
+    const tokenParam = resolvedParams?.token;
+    const token = typeof tokenParam === 'string' ? tokenParam : Array.isArray(tokenParam) ? tokenParam[0] : null;
 
     return (
         <div className="flex min-h-screen items-center justify-center px-4">
