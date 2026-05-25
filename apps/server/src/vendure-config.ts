@@ -47,9 +47,9 @@ export const config: VendureConfig = {
 
         ...(IS_DEV
             ? {
-                  adminApiDebug: true,
-                  shopApiDebug: true,
-              }
+                adminApiDebug: true,
+                shopApiDebug: true,
+            }
             : {}),
     },
 
@@ -64,9 +64,9 @@ export const config: VendureConfig = {
         cookieOptions: {
             secret: process.env.COOKIE_SECRET!,
 
-            secure: !IS_DEV,
-
             sameSite: IS_DEV ? 'lax' : 'none',
+
+            ...(IS_DEV ? {} : { secure: true }),
         },
     },
 
