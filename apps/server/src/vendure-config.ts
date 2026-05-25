@@ -45,9 +45,9 @@ export const config: VendureConfig = {
 
         ...(IS_DEV
             ? {
-                  adminApiDebug: true,
-                  shopApiDebug: true,
-              }
+                adminApiDebug: true,
+                shopApiDebug: true,
+            }
             : {}),
     },
 
@@ -59,16 +59,9 @@ export const config: VendureConfig = {
             password: process.env.SUPERADMIN_PASSWORD!,
         },
 
-        cookieOptions: IS_DEV
-            ? {
-                  secret: process.env.COOKIE_SECRET!,
-                  sameSite: 'lax',
-              }
-            : {
-                  secret: process.env.COOKIE_SECRET!,
-                  sameSite: 'none',
-                  secure: true,
-              },
+        cookieOptions: {
+            secret: process.env.COOKIE_SECRET,
+        },
     },
 
     dbConnectionOptions: {
