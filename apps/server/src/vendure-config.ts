@@ -38,8 +38,6 @@ export const config: VendureConfig = {
             origin: [
                 'http://localhost:3000',
                 'http://localhost:3001',
-
-                // Vercel frontend
                 'https://khukuri1-store.vercel.app',
             ],
             credentials: true,
@@ -47,9 +45,9 @@ export const config: VendureConfig = {
 
         ...(IS_DEV
             ? {
-                adminApiDebug: true,
-                shopApiDebug: true,
-            }
+                  adminApiDebug: true,
+                  shopApiDebug: true,
+              }
             : {}),
     },
 
@@ -61,13 +59,16 @@ export const config: VendureConfig = {
             password: process.env.SUPERADMIN_PASSWORD!,
         },
 
-        cookieOptions: {
-            secret: process.env.COOKIE_SECRET!,
-
-            sameSite: IS_DEV ? 'lax' : 'none',
-
-            ...(IS_DEV ? {} : { secure: true }),
-        },
+        cookieOptions: IS_DEV
+            ? {
+                  secret: process.env.COOKIE_SECRET!,
+                  sameSite: 'lax',
+              }
+            : {
+                  secret: process.env.COOKIE_SECRET!,
+                  sameSite: 'none',
+                  secure: true,
+              },
     },
 
     dbConnectionOptions: {
@@ -154,9 +155,10 @@ export const config: VendureConfig = {
         DashboardPlugin.init({
             route: 'dashboard',
 
-            appDir: IS_DEV
-                ? path.join(__dirname, '../dist/dashboard')
-                : path.join(__dirname, 'dashboard'),
+            appDir: path.join(
+                __dirname,
+                '../dist/dashboard'
+            ),
         }),
 
         CustomAdminUiPlugin,
