@@ -112,7 +112,7 @@ export const config: VendureConfig = {
         }),
 
         EmailPlugin.init({
-            devMode: IS_DEV,
+                       devMode: true,
 
             outputPath: path.join(
                 __dirname,
