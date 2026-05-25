@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
             {
                 hostname: 'khukuri1-ecommerce.onrender.com',
                 protocol: 'https'
+            },
+            {
+                hostname: 'khukuri-ecommerce.onrender.com',
+                protocol: 'https'
             }
         ],
     },
