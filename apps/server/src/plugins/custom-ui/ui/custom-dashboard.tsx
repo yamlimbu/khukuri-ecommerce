@@ -18,13 +18,17 @@ const LoginPageTitle = () => {
     );
 };
 
+const LoginLogo = () => {
+    return null;
+};
+
 export default defineDashboardExtension({
     login: {
         logo: {
-            component: () => null
+            component: LoginLogo,
         },
         beforeForm: {
-            component: LoginPageTitle
-        }
-    }
+            component: LoginPageTitle,
+        },
+    },
 });

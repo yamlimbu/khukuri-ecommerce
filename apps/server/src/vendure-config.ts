@@ -25,6 +25,21 @@ const IS_DEV = process.env.APP_ENV === 'dev';
 
 const serverPort = Number(process.env.PORT) || 3000;
 
+// In this config file, we rely on the `dbConnectionOptions` branch:
+// - APP_ENV === 'local' uses DB_* variables
+// - otherwise uses DATABASE_URL
+
+const isLocal = process.env.APP_ENV === 'local';
+
+const frontendBaseUrl = isLocal
+    ? 'http://localhost:3001'
+    : 'https://khukuri1-store.vercel.app';
+
+const backendBaseUrl = isLocal
+    ? 'http://localhost:3000'
+    : 'https://khukuri-ecommerce.onrender.com';
+
+
 export const config: VendureConfig = {
     apiOptions: {
         port: serverPort,
@@ -36,7 +51,7 @@ export const config: VendureConfig = {
 
         cors: {
             origin: [
-                'http://localhost:3000',
+                'http://localhost:3000','https://khukuri-ecommerce.onrender.com',
                 'http://localhost:3001',
                 'https://khukuri1-store.vercel.app',
             ],
@@ -67,7 +82,19 @@ export const config: VendureConfig = {
     dbConnectionOptions: {
         type: 'postgres',
 
-        url: process.env.DATABASE_URL,
+        ...(isLocal
+            ? {
+                  database: process.env.DB_NAME,
+                  schema: process.env.DB_SCHEMA,
+                  host: process.env.DB_HOST,
+                  port: +process.env.DB_PORT!,
+                  username: process.env.DB_USERNAME,
+                  password: process.env.DB_PASSWORD,
+              }
+            : {
+                  // Remote env uses DATABASE_URL
+                  url: process.env.DATABASE_URL!,
+              }),
 
         synchronize: false,
 
@@ -95,16 +122,15 @@ export const config: VendureConfig = {
                 '../static/assets'
             ),
 
-            assetUrlPrefix: IS_DEV
-                ? undefined
-                : 'https://khukuri-ecommerce.onrender.com/assets/',
+            assetUrlPrefix: IS_DEV ? 'https://khukuri1-ecommerce.onrender.com/assets/' : undefined,
         }),
 
         DefaultSchedulerPlugin.init(),
 
         DefaultJobQueuePlugin.init({
-             useDatabaseForBuffer: true as true,
+            useDatabaseForBuffer: true,
         }),
+
 
         DefaultSearchPlugin.init({
             bufferUpdates: false,
@@ -130,19 +156,31 @@ export const config: VendureConfig = {
                 )
             ),
 
-            globalTemplateVars: {
-                fromAddress:
-                    '"Khukuri Store" <noreply@khukuri.com>',
 
-                verifyEmailAddressUrl:
-                    'https://khukuri1-store.vercel.app/verify',
+            ...(isLocal
+                ? {
+                      globalTemplateVars: {
+                          // The following variables will change depending on your storefront implementation.
+                          // Here we are assuming a storefront running at http://localhost:3001.
+                          fromAddress: '"example" <noreply@example.com>',
+                          verifyEmailAddressUrl: `${frontendBaseUrl}/verify`,
+                          passwordResetUrl: `${frontendBaseUrl}/password-reset`,
+                          changeEmailAddressUrl: `${frontendBaseUrl}/verify-email-address-change`,
+                      },
+                  }
+                : {
+                      // Remote env uses DATABASE_URL
+                      globalTemplateVars: {
+                          fromAddress: '"Khukuri Store" <noreply@khukuri.com>',
+                          verifyEmailAddressUrl: `${frontendBaseUrl}/verify`,
+                          passwordResetUrl: `${frontendBaseUrl}/password-reset`,
+                          changeEmailAddressUrl: `${frontendBaseUrl}/verify-email-address-change`,
+                      },
+                  }),
 
-                passwordResetUrl:
-                    'https://khukuri1-store.vercel.app/password-reset',
 
-                changeEmailAddressUrl:
-                    'https://khukuri1-store.vercel.app/verify-email-address-change',
-            },
+            
+            
         }),
 
         DashboardPlugin.init({
