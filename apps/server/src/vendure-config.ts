@@ -103,7 +103,7 @@ export const config: VendureConfig = {
         DefaultSchedulerPlugin.init(),
 
         DefaultJobQueuePlugin.init({
-            useDatabaseForBuffer: true,
+             useDatabaseForBuffer: true as true,
         }),
 
         DefaultSearchPlugin.init({
