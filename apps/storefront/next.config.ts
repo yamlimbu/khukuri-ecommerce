@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
             },
             {
                 hostname: 'localhost'
+            },
+            {
+                hostname: 'khukuri1-ecommerce.onrender.com',
+                protocol: 'https'
             }
         ],
     },

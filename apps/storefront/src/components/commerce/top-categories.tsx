@@ -21,6 +21,8 @@ export async function TopCategories() {
 
     return (
         <section className="py-20 bg-background border-t border-border">
+            <div className="sr-only" aria-live="polite">Top Categories</div>
+
             <div className="container mx-auto px-4">
                 <div className="flex justify-between items-end mb-8">
                     <div>
