@@ -7,17 +7,26 @@ export function cn(...inputs: ClassValue[]) {
 
 export function normalizeAssetUrl(
   url: string | null | undefined,
-  cacheBuster?: string | number | null
+  cacheBuster?: unknown
 ): string {
   const normalized = url ? url.replace(/\\/g, '/') : '';
   if (!normalized) {
     return '';
   }
 
-  if (cacheBuster == null || cacheBuster === '') {
+  if (cacheBuster == null) {
+    return normalized;
+  }
+
+  const cacheValue =
+    typeof cacheBuster === 'string' || typeof cacheBuster === 'number'
+      ? cacheBuster
+      : String(cacheBuster);
+
+  if (cacheValue === '') {
     return normalized;
   }
 
   const separator = normalized.includes('?') ? '&' : '?';
-  return `${normalized}${separator}v=${encodeURIComponent(String(cacheBuster))}`;
+  return `${normalized}${separator}v=${encodeURIComponent(cacheValue)}`;
 }
