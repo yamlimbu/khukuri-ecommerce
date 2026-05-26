@@ -21,7 +21,7 @@ export function ProductCard({product: productProp}: ProductCardProps) {
             <div className="aspect-square relative bg-muted/30">
                 {product.productAsset ? (
                     <Image
-                        src={normalizeAssetUrl(product.productAsset.preview, product.productAsset.updatedAt)}
+                        src={normalizeAssetUrl(product.productAsset.preview)}
                         alt={product.productName}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
