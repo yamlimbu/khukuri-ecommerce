@@ -122,7 +122,9 @@ export const config: VendureConfig = {
                 '../static/assets'
             ),
 
-            assetUrlPrefix: IS_DEV ? 'https://khukuri1-ecommerce.onrender.com/assets/' : undefined,
+            // In production, make sure Vendure generates asset URLs that point to the Render backend.
+            // In dev, leave it undefined so Vendure can derive it correctly.
+            assetUrlPrefix: IS_DEV ? undefined : 'https://khukuri-ecommerce.onrender.com/assets/',
         }),
 
         DefaultSchedulerPlugin.init(),
@@ -186,12 +188,12 @@ export const config: VendureConfig = {
         DashboardPlugin.init({
             route: 'dashboard',
 
-            appDir: path.join(
-                __dirname,
-                '../dist/dashboard'
-            ),
+            // IMPORTANT: render your dashboard extension from the Vite build output.
+            // This path must match apps/server/vite.config.mts outDir.
+            appDir: path.join(__dirname, '../dist/dashboard'),
         }),
 
         CustomAdminUiPlugin,
     ],
 };
+
