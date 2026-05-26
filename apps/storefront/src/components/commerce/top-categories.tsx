@@ -1,6 +1,7 @@
 import { cacheLife } from "next/cache";
 import { query } from "@/lib/vendure/api";
 import { GetTopCollectionsQuery } from "@/lib/vendure/queries";
+import { normalizeAssetUrl } from '@/lib/utils';
 import Link from "next/link";
 import Image from "next/image";
 
@@ -41,7 +42,7 @@ export async function TopCategories() {
                             <div className="w-full aspect-square mb-4 relative rounded-md overflow-hidden bg-muted">
                                 {category.featuredAsset ? (
                                     <Image
-                                        src={category.featuredAsset.preview}
+                                        src={normalizeAssetUrl(category.featuredAsset.preview, category.featuredAsset.updatedAt) || ''}
                                         alt={category.name}
                                         fill
                                         sizes="(max-width: 768px) 50vw, 20vw"

@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { query } from '@/lib/vendure/api';
 import { SearchProductsQuery, GetCollectionProductsQuery } from '@/lib/vendure/queries';
 import { ProductGrid } from '@/components/commerce/product-grid';
+import { normalizeAssetUrl } from '@/lib/utils';
 import { FacetFilters } from '@/components/commerce/facet-filters';
 import { ProductGridSkeleton } from '@/components/shared/product-grid-skeleton';
 import { buildSearchInput, getCurrentPage } from '@/lib/search-helpers';
@@ -73,7 +74,7 @@ export async function generateMetadata({
             title: collection.name,
             description,
             images: collection.featuredAsset?.preview
-                ? [collection.featuredAsset.preview]
+                ? [normalizeAssetUrl(collection.featuredAsset.preview, collection.featuredAsset.updatedAt)]
                 : undefined,
         },
     };

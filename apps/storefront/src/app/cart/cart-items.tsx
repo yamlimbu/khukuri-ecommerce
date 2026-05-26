@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { normalizeAssetUrl } from '@/lib/utils';
 import {Button} from '@/components/ui/button';
 import {Minus, Plus, X} from 'lucide-react';
 import {Price} from '@/components/commerce/price';
@@ -58,7 +59,7 @@ export async function CartItems({activeOrder}: { activeOrder: ActiveOrder | null
                             className="flex-shrink-0"
                         >
                             <Image
-                                src={line.productVariant.product.featuredAsset.preview}
+                                src={normalizeAssetUrl(line.productVariant.product.featuredAsset.preview, line.productVariant.product.featuredAsset.updatedAt) || ''}
                                 alt={line.productVariant.name}
                                 width={120}
                                 height={120}

@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import {FragmentOf, readFragment} from '@/graphql';
+import { normalizeAssetUrl } from '@/lib/utils';
 import {ProductCardFragment} from '@/lib/vendure/fragments';
 import {Price} from '@/components/commerce/price';
 import {Suspense} from "react";
@@ -20,7 +21,7 @@ export function ProductCard({product: productProp}: ProductCardProps) {
             <div className="aspect-square relative bg-muted/30">
                 {product.productAsset ? (
                     <Image
-                        src={product.productAsset.preview}
+                        src={normalizeAssetUrl(product.productAsset.preview, product.productAsset.updatedAt)}
                         alt={product.productName}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-300"

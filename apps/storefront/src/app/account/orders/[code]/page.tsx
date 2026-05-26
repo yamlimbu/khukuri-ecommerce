@@ -12,6 +12,7 @@ import {notFound, redirect} from "next/navigation";
 import {Price} from '@/components/commerce/price';
 import {OrderStatusBadge} from '@/components/commerce/order-status-badge';
 import {formatDate} from '@/lib/format';
+import { normalizeAssetUrl } from '@/lib/utils';
 import Link from "next/link";
 
 type OrderDetailPageProps = PageProps<'/account/orders/[code]'>;
@@ -80,7 +81,10 @@ export default async function OrderDetailPage(props: PageProps<'/account/orders/
                                             className="relative h-20 w-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
                                             {line.productVariant.product.featuredAsset && (
                                                 <Image
-                                                    src={line.productVariant.product.featuredAsset.preview}
+                                                    src={normalizeAssetUrl(
+                                                        line.productVariant.product.featuredAsset.preview,
+                                                        line.productVariant.product.featuredAsset.updatedAt
+                                                    )}
                                                     alt={line.productVariant.name}
                                                     fill
                                                     className="object-cover"

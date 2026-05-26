@@ -6,6 +6,7 @@ import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {CheckCircle2} from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { normalizeAssetUrl } from '@/lib/utils';
 import {Separator} from '@/components/ui/separator';
 import {Price} from '@/components/commerce/price';
 import {notFound} from "next/navigation";
@@ -30,6 +31,7 @@ const GetOrderByCodeQuery = graphql(`
                         featuredAsset {
                             id
                             preview
+                            updatedAt
                         }
                     }
                 }
@@ -87,7 +89,10 @@ export async function OrderConfirmation({params}: PageProps<'/order-confirmation
                                 {line.productVariant.product.featuredAsset && (
                                     <div className="flex-shrink-0">
                                         <Image
-                                            src={line.productVariant.product.featuredAsset.preview}
+                                            src={normalizeAssetUrl(
+                                                line.productVariant.product.featuredAsset.preview,
+                                                line.productVariant.product.featuredAsset.updatedAt
+                                            ) || ''}
                                             alt={line.productVariant.name}
                                             width={80}
                                             height={80}

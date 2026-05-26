@@ -11,6 +11,7 @@ export const GetTopCollectionsQuery = graphql(`
                 featuredAsset {
                     id
                     preview
+                    updatedAt
                 }
             }
         }
@@ -58,6 +59,7 @@ export const GetProductDetailQuery = graphql(`
                 id
                 preview
                 source
+                updatedAt
             }
             variants {
                 id
@@ -131,6 +133,7 @@ export const GetActiveOrderQuery = graphql(`
                         featuredAsset {
                             id
                             preview
+                            updatedAt
                         }
                     }
                 }
@@ -211,6 +214,7 @@ export const GetActiveOrderForCheckoutQuery = graphql(`
                         featuredAsset {
                             id
                             preview
+                            updatedAt
                         }
                     }
                 }
@@ -308,6 +312,7 @@ export const GetCustomerOrdersQuery = graphql(`
                                 featuredAsset {
                                     id
                                     preview
+                                    updatedAt
                                 }
                             }
                         }
@@ -392,6 +397,7 @@ export const GetOrderDetailQuery = graphql(`
                         featuredAsset {
                             id
                             preview
+                            updatedAt
                         }
                     }
                 }
@@ -430,6 +436,7 @@ export const GetCollectionProductsQuery = graphql(`
             featuredAsset {
                 id
                 preview
+                updatedAt
             }
         }
         search(input: $input) {

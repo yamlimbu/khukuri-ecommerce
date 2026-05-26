@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { normalizeAssetUrl } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { OrderLine } from './types';
@@ -21,7 +22,10 @@ export default function OrderSummary() {
               {line.productVariant.product.featuredAsset && (
                 <div className="flex-shrink-0 w-15 h-15">
                   <Image
-                    src={line.productVariant.product.featuredAsset.preview}
+                    src={normalizeAssetUrl(
+                      line.productVariant.product.featuredAsset.preview,
+                      line.productVariant.product.featuredAsset.updatedAt
+                    )}
                     alt={line.productVariant.name}
                     width={60}
                     height={60}

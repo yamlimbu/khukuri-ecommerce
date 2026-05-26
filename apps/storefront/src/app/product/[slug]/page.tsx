@@ -3,6 +3,7 @@ import { query } from '@/lib/vendure/api';
 import { GetProductDetailQuery } from '@/lib/vendure/queries';
 import { ProductImageCarousel } from '@/components/commerce/product-image-carousel';
 import { ProductInfo } from '@/components/commerce/product-info';
+import { normalizeAssetUrl } from '@/lib/utils';
 import { RelatedProducts } from '@/components/commerce/related-products';
 import {
     Accordion,
@@ -41,7 +42,10 @@ export async function generateMetadata({
     }
 
     const description = truncateDescription(product.description);
-    const ogImage = product.assets?.[0]?.preview;
+    const ogImage = normalizeAssetUrl(
+        product.assets?.[0]?.preview,
+        product.assets?.[0]?.updatedAt
+    );
 
     return {
         title: product.name,

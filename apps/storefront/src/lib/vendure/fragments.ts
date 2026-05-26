@@ -8,6 +8,7 @@ export const ProductCardFragment = graphql(`
         productAsset {
             id
             preview
+            updatedAt
         }
         priceWithTax {
             __typename
