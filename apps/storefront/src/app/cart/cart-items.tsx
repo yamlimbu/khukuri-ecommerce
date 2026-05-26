@@ -23,6 +23,7 @@ type ActiveOrder = {
                 slug: string;
                 featuredAsset?: {
                     preview: string;
+                    updatedAt?: string | null;
                 } | null;
             };
         };
