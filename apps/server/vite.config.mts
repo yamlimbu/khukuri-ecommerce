@@ -14,8 +14,8 @@ export default defineConfig({
                 /dist\/plugins\/content/, // compiled content plugin
                 /content\.plugin\.js/, // explicit file name
                 /@vendure\/dashboard\/dist/, // vendure dashboard compiled paths
-                /node_modules\/@vendure\/dashboard\/dist/, // alternative path                /lucide-react/, // externalize lucide-react imports
-                'lucide-react', // explicit external package name                /^node:/, // node: builtins
+                /node_modules\/@vendure\/dashboard\/dist/, // alternative path
+                /^node:/, // node: builtins
                 'fs',
                 'path',
                 'os',
