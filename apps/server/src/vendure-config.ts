@@ -56,8 +56,11 @@ function getContentPlugin(): any {
         return null;
     }
 
+    console.log(`ContentPlugin: found compiled plugin at ${foundPath}`);
+
     try {
         contentPluginCache = require(foundPath).ContentPlugin;
+        console.log(`ContentPlugin: loaded ContentPlugin from ${foundPath}`);
         return contentPluginCache;
     } catch (err) {
         console.error(`Failed to load ContentPlugin from ${foundPath}:`, err);
