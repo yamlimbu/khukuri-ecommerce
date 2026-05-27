@@ -50,9 +50,22 @@ function getContentPlugin(): any {
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 const TRUST_PROXY_ENV = process.env.TRUST_PROXY;
-const trustProxy = typeof TRUST_PROXY_ENV === 'string'
-    ? TRUST_PROXY_ENV !== 'false' && TRUST_PROXY_ENV !== '0'
-    : process.env.NODE_ENV === 'production';
+
+// Resolve a safe `trustProxy` value for Express/express-rate-limit.
+// - If TRUST_PROXY is set, honor: '0'/'false' => 0, '1'/'true' => 1, otherwise pass through string (e.g. '127.0.0.1')
+// - If not set, default to trusting exactly one proxy in production (1), and no proxy in development (0).
+let trustProxy: number | string;
+if (typeof TRUST_PROXY_ENV === 'string') {
+    if (TRUST_PROXY_ENV === 'false' || TRUST_PROXY_ENV === '0') {
+        trustProxy = 0;
+    } else if (TRUST_PROXY_ENV === 'true' || TRUST_PROXY_ENV === '1') {
+        trustProxy = 1;
+    } else {
+        trustProxy = TRUST_PROXY_ENV;
+    }
+} else {
+    trustProxy = process.env.NODE_ENV === 'production' ? 1 : 0;
+}
 
 const serverPort = Number(process.env.PORT) || 3000;
 
