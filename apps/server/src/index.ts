@@ -6,6 +6,8 @@ console.log('Vendure starting with', {
     NODE_ENV: process.env.NODE_ENV,
     TRUST_PROXY: process.env.TRUST_PROXY,
     trustProxy: config.apiOptions?.trustProxy,
+    serverPort: config.apiOptions?.port,
+    processEnvPort: process.env.PORT,
 });
 
 runMigrations(config)
