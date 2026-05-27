@@ -75,20 +75,8 @@ export class CreateBannerAndPageTables1705555500000 implements MigrationInterfac
             true
         );
 
-        // Add foreign key for Banner.imageId -> Asset.id
-        // Only add FK if the `asset` table already exists ( Vendure core migrations may run later )
-        if (await queryRunner.hasTable('asset')) {
-            await queryRunner.createForeignKey(
-                'banner',
-                new TableForeignKey({
-                    columnNames: ['imageId'],
-                    referencedTableName: 'asset',
-                    referencedColumnNames: ['id'],
-                    onDelete: 'SET NULL',
-                    onUpdate: 'CASCADE',
-                })
-            );
-        }
+        // Note: foreign keys to `asset` are intentionally omitted to avoid
+        // cross-migration ordering/type compatibility issues with Vendure core migrations.
 
         // Create Page table
         await queryRunner.createTable(
@@ -145,19 +133,8 @@ export class CreateBannerAndPageTables1705555500000 implements MigrationInterfac
             true
         );
 
-        // Add foreign key for Page.featuredImageId -> Asset.id
-        if (await queryRunner.hasTable('asset')) {
-            await queryRunner.createForeignKey(
-                'page',
-                new TableForeignKey({
-                    columnNames: ['featuredImageId'],
-                    referencedTableName: 'asset',
-                    referencedColumnNames: ['id'],
-                    onDelete: 'SET NULL',
-                    onUpdate: 'CASCADE',
-                })
-            );
-        }
+        // Note: foreign keys to `asset` are intentionally omitted to avoid
+        // cross-migration ordering/type compatibility issues with Vendure core migrations.
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
