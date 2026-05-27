@@ -15,14 +15,13 @@ export class CreateBannerAndPageTables1705555500000 implements MigrationInterfac
                     },
                     {
                         name: 'createdAt',
-                        type: 'datetime',
+                        type: 'timestamp',
                         default: 'CURRENT_TIMESTAMP',
                     },
                     {
                         name: 'updatedAt',
-                        type: 'datetime',
+                        type: 'timestamp',
                         default: 'CURRENT_TIMESTAMP',
-                        onUpdate: 'CURRENT_TIMESTAMP',
                     },
                     {
                         name: 'title',
@@ -101,14 +100,13 @@ export class CreateBannerAndPageTables1705555500000 implements MigrationInterfac
                     },
                     {
                         name: 'createdAt',
-                        type: 'datetime',
+                        type: 'timestamp',
                         default: 'CURRENT_TIMESTAMP',
                     },
                     {
                         name: 'updatedAt',
-                        type: 'datetime',
+                        type: 'timestamp',
                         default: 'CURRENT_TIMESTAMP',
-                        onUpdate: 'CURRENT_TIMESTAMP',
                     },
                     {
                         name: 'title',
@@ -125,7 +123,7 @@ export class CreateBannerAndPageTables1705555500000 implements MigrationInterfac
                     },
                     {
                         name: 'content',
-                        type: 'longtext',
+                        type: 'text',
                         isNullable: false,
                     },
                     {
