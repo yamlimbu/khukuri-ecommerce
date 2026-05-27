@@ -31,19 +31,36 @@ function getContentPlugin(): any {
         return contentPluginCache;
     }
 
-    const contentPluginPath = path.resolve(__dirname, '../dist/plugins/content/content.plugin.js');
-    
-    if (!fs.existsSync(contentPluginPath)) {
-        // During build, the dist might not exist yet - return null to skip
-        console.warn(`ContentPlugin dist not found at ${contentPluginPath} - skipping plugin load during build`);
+    // Try a list of likely locations for the compiled ContentPlugin.
+    const candidatePaths = [
+        // When running from compiled `apps/server/dist` (common production path)
+        path.resolve(__dirname, 'plugins/content/content.plugin.js'),
+        // When __dirname is `apps/server/dist` but compiled plugin was output to ../dist/plugins
+        path.resolve(__dirname, '../dist/plugins/content/content.plugin.js'),
+        // When running from repository root with dist in ./dist
+        path.resolve(process.cwd(), 'dist/plugins/content/content.plugin.js'),
+        // Monorepo-style path used in some CI environments
+        path.resolve(process.cwd(), 'apps/server/dist/plugins/content/content.plugin.js'),
+    ];
+
+    let foundPath: string | null = null;
+    for (const p of candidatePaths) {
+        if (fs.existsSync(p)) {
+            foundPath = p;
+            break;
+        }
+    }
+
+    if (!foundPath) {
+        console.warn(`ContentPlugin dist not found in candidate paths, skipping plugin load. Tried: ${candidatePaths.join(', ')}`);
         return null;
     }
 
     try {
-        contentPluginCache = require(contentPluginPath).ContentPlugin;
+        contentPluginCache = require(foundPath).ContentPlugin;
         return contentPluginCache;
     } catch (err) {
-        console.error(`Failed to load ContentPlugin from ${contentPluginPath}:`, err);
+        console.error(`Failed to load ContentPlugin from ${foundPath}:`, err);
         return null;
     }
 }
