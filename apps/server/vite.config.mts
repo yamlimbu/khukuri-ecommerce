@@ -7,6 +7,20 @@ export default defineConfig({
     base: '/dashboard',
     build: {
         outDir: join(__dirname, 'dist/dashboard'),
+        rollupOptions: {
+            // Prevent Rollup from trying to bundle runtime/compiled Vendure plugin
+            // files which are intended to be required at runtime by the server.
+            external: (id: string) => {
+                if (!id || typeof id !== 'string') return false;
+                // compiled plugin files under dist/plugins/content
+                if (id.includes('dist/plugins/content') || id.includes('content.plugin.js')) return true;
+                // Vendure dashboard compiled paths
+                if (id.includes('@vendure/dashboard/dist')) return true;
+                // treat node builtins as external
+                if (id.startsWith('node:')) return true;
+                return false;
+            },
+        },
     },
     plugins: [
         vendureDashboardPlugin({
