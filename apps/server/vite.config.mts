@@ -4,7 +4,7 @@ import { pathToFileURL } from 'url';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-    base: '/dashboard',
+    base: '/dashboard/',
     build: {
         outDir: join(__dirname, 'dist/dashboard'),
         rollupOptions: {
