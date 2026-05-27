@@ -23,12 +23,18 @@ import { CustomAdminUiPlugin } from './plugins/custom-ui/custom-ui.plugin';
 
 declare const require: any;
 const contentPluginPaths = [
+    // Common local build outputs
     path.resolve(__dirname, '../dist/plugins/content/content.plugin.js'),
     path.resolve(__dirname, '../../dist/plugins/content/content.plugin.js'),
     path.resolve(process.cwd(), 'dist/plugins/content/content.plugin.js'),
     path.resolve(process.cwd(), 'apps/server/dist/plugins/content/content.plugin.js'),
     path.resolve(process.cwd(), '../dist/plugins/content/content.plugin.js'),
     path.resolve(process.cwd(), '../apps/server/dist/plugins/content/content.plugin.js'),
+    // Additional monorepo / Render build layouts
+    path.resolve(process.cwd(), 'apps/dist/plugins/content/content.plugin.js'),
+    path.resolve(process.cwd(), 'apps/apps/server/dist/plugins/content/content.plugin.js'),
+    path.resolve(process.cwd(), '../../apps/server/dist/plugins/content/content.plugin.js'),
+    path.resolve(process.cwd(), '../../dist/plugins/content/content.plugin.js'),
 ];
 let ContentPlugin: any;
 for (const pluginPath of contentPluginPaths) {
