@@ -1,45 +1,111 @@
+"use client";
+
 import * as React from "react";
+import { useEffect, useState } from "react";
 import { HeroCarousel, HeroBanner } from "./hero-carousel";
 
-// You can fetch these from Vendure or a CMS later.
-// If you set this array to empty [], it will show the default Genuine Gurkha Kukri Knives banner.
-const mockBanners: HeroBanner[] = [
-    {
-        id: "1",
-        title: "Genuine Gurkha Kukri Knives",
-        subtitle: "Hand forged in Nepal by traditional Kamis since 1991. Official Army Kukri maker and exporter.",
-        primaryButtonLabel: "Shop Traditional Knives",
-        primaryButtonLink: "/search",
-        secondaryButtonLabel: "View Modern Selection",
-        secondaryButtonLink: "/search?q=modern",
-        image: "https://www.thekhukurihouse.com/public/images/upload/product/echo-predator-kukri.jpg"
-    },
-    {
-        id: "2",
-        title: "New Arrivals for 2026",
-        subtitle: "Discover our latest collection of premium forged blades perfect for outdoor adventures.",
-        primaryButtonLabel: "Explore New Arrivals",
-        primaryButtonLink: "/search",
-        image: "https://www.thekhukurihouse.com/public/images/upload/product/extraimages/echo-the-predator.jpg"
-    },
-    {
-        id: "3",
-        title: "Custom Engravings Available",
-        subtitle: "Make your Kukri truly unique with our personalized engraving service directly from Kathmandu.",
-        primaryButtonLabel: "Learn More",
-        primaryButtonLink: "/search",
-        image: "https://www.thekhukurihouse.com/public/images/upload/product/extraimages/predator-kukri-sword.jpg"
+// No fallback/mock banners - only show banners fetched from the API
+const mockBanners: HeroBanner[] = [];
+
+function getBannerApiUrl(): string {
+    return (
+        process.env.NEXT_PUBLIC_VENDURE_SHOP_API_URL ||
+        process.env.VENDURE_SHOP_API_URL ||
+        process.env.VENDURE_API_URL ||
+        '/shop-api'
+    );
+}
+
+function isAbortError(error: unknown): boolean {
+    return (
+        error instanceof Error &&
+        (error.name === 'AbortError' || (error as any).code === 'ABORT_ERR' || (error as any).code === 20)
+    );
+}
+
+export function HeroSection() {
+    const [banners, setBanners] = useState<HeroBanner[]>(mockBanners);
+
+    useEffect(() => {
+        const controller = new AbortController();
+        const apiUrl = getBannerApiUrl();
+
+        const fetchBanners = async () => {
+            const query = `
+                query ShopBanners {
+                    banners {
+                        id
+                        title
+                        subtitle
+                        image {
+                            preview
+                        }
+                        primaryButtonLabel
+                        primaryButtonLink
+                        secondaryButtonLabel
+                        secondaryButtonLink
+                    }
+                }
+            `;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query }),
+                    signal: controller.signal,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Shop API request failed with status ${response.status}`);
+                }
+
+                const json = await response.json();
+                if (json.errors) {
+                    const errorMessages = json.errors.map((error: any) => error.message).join(', ');
+                    throw new Error(`GraphQL error: ${errorMessages}`);
+                }
+
+                const fetchedBanners = (json.data?.banners ?? []).map((banner: any) => ({
+                    id: banner.id,
+                    title: banner.title,
+                    subtitle: banner.subtitle ?? '',
+                    image: banner.image?.preview ?? undefined,
+                    primaryButtonLabel: banner.primaryButtonLabel ?? '',
+                    primaryButtonLink: banner.primaryButtonLink ?? '/search',
+                    secondaryButtonLabel: banner.secondaryButtonLabel ?? undefined,
+                    secondaryButtonLink: banner.secondaryButtonLink ?? undefined,
+                })) as HeroBanner[];
+
+                if (fetchedBanners.length > 0) {
+                    console.log(`Loaded ${fetchedBanners.length} banners from API`, fetchedBanners);
+                    setBanners(fetchedBanners);
+                } else {
+                    console.warn('No banners returned from API');
+                }
+            } catch (error) {
+                if (isAbortError(error)) {
+                    return;
+                }
+                console.error('Failed to load hero banners:', error);
+            }
+        };
+
+        fetchBanners();
+
+        return () => controller.abort();
+    }, []);
+
+    if (banners.length === 0) {
+        return null;
     }
-];
-export function HeroSection({ banners = [] }: { banners?: HeroBanner[] }) {
-    const displayBanners = banners.length > 0 ? banners : mockBanners;
 
     return (
         <section className="relative bg-background overflow-hidden border-b border-border">
-            {/* Background Pattern/Gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-background dark:from-zinc-900 dark:via-zinc-950 dark:to-black opacity-90" />
-
-            <HeroCarousel banners={displayBanners} />
+            <HeroCarousel banners={banners} />
         </section>
     );
 }

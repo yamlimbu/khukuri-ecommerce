@@ -43,33 +43,8 @@ export function HeroCarousel({ banners }: HeroCarouselProps) {
         setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
     };
 
-    // Fallback if no banners are provided
     if (!banners || banners.length === 0) {
-        return (
-            <div className="relative text-foreground container mx-auto px-4 py-16 md:py-24 flex flex-col items-center justify-center text-center">
-                <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in zoom-in duration-500">
-                    <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold tracking-tight mb-4 text-emerald-700 dark:text-emerald-500 drop-shadow-md uppercase">
-                        Genuine Gurkha Kukri Knives
-                    </h1>
-                    <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-                        Hand forged in Nepal by traditional Kamis since 1991. Official Army Kukri maker and exporter.
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
-                        <Button asChild size="lg" className="min-w-[220px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg border-2 border-emerald-700 shadow-lg">
-                            <Link href="/search">
-                                Shop Traditional Knives
-                            </Link>
-                        </Button>
-                        <Button asChild variant="outline" size="lg" className="min-w-[220px] bg-background hover:bg-muted text-foreground font-bold text-lg border-2 border-emerald-600/50 hover:border-emerald-600 shadow-lg">
-                            <Link href="/search?q=modern">
-                                View Modern Selection
-                            </Link>
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        );
+        return null;
     }
 
     const currentBanner = banners[currentIndex];
