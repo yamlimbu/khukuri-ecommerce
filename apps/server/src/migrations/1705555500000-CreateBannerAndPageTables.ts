@@ -76,16 +76,19 @@ export class CreateBannerAndPageTables1705555500000 implements MigrationInterfac
         );
 
         // Add foreign key for Banner.imageId -> Asset.id
-        await queryRunner.createForeignKey(
-            'banner',
-            new TableForeignKey({
-                columnNames: ['imageId'],
-                referencedTableName: 'asset',
-                referencedColumnNames: ['id'],
-                onDelete: 'SET NULL',
-                onUpdate: 'CASCADE',
-            })
-        );
+        // Only add FK if the `asset` table already exists ( Vendure core migrations may run later )
+        if (await queryRunner.hasTable('asset')) {
+            await queryRunner.createForeignKey(
+                'banner',
+                new TableForeignKey({
+                    columnNames: ['imageId'],
+                    referencedTableName: 'asset',
+                    referencedColumnNames: ['id'],
+                    onDelete: 'SET NULL',
+                    onUpdate: 'CASCADE',
+                })
+            );
+        }
 
         // Create Page table
         await queryRunner.createTable(
@@ -143,16 +146,18 @@ export class CreateBannerAndPageTables1705555500000 implements MigrationInterfac
         );
 
         // Add foreign key for Page.featuredImageId -> Asset.id
-        await queryRunner.createForeignKey(
-            'page',
-            new TableForeignKey({
-                columnNames: ['featuredImageId'],
-                referencedTableName: 'asset',
-                referencedColumnNames: ['id'],
-                onDelete: 'SET NULL',
-                onUpdate: 'CASCADE',
-            })
-        );
+        if (await queryRunner.hasTable('asset')) {
+            await queryRunner.createForeignKey(
+                'page',
+                new TableForeignKey({
+                    columnNames: ['featuredImageId'],
+                    referencedTableName: 'asset',
+                    referencedColumnNames: ['id'],
+                    onDelete: 'SET NULL',
+                    onUpdate: 'CASCADE',
+                })
+            );
+        }
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
