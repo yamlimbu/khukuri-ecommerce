@@ -17,115 +17,35 @@ import { DashboardPlugin } from '@vendure/dashboard/plugin';
 import { GraphiqlPlugin } from '@vendure/graphiql-plugin';
 
 import 'dotenv/config';
+import fs from 'fs';
 import path from 'path';
 
-import { ContentPlugin } from './plugins/content/content.plugin';
-import { ContentPlugin as ImportedContentPlugin } from './plugins/content/content.plugin';
 import { CustomAdminUiPlugin } from './plugins/custom-ui/custom-ui.plugin';
 
 declare const require: any;
-const cwd = process.cwd();
-const contentPluginCandidates = [
-    // Paths relative to the compiled config temp folder used by Vendure Dashboard
-    path.resolve(__dirname, '../dist/plugins/content/content.plugin.js'),
-    path.resolve(__dirname, '../../dist/plugins/content/content.plugin.js'),
-    path.resolve(__dirname, '../../../dist/plugins/content/content.plugin.js'),
-    path.resolve(__dirname, '../../../../dist/plugins/content/content.plugin.js'),
 
-    // Common repo layout paths from the workspace root
-    path.resolve(cwd, 'dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, 'apps/dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, 'apps/server/dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, 'apps/server/apps/dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, 'apps/server/apps/server/dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, 'apps/server/apps/server/apps/dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, 'apps/server/apps/apps/server/dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, 'apps/apps/server/dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, 'apps/apps/apps/server/dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, 'apps/apps/apps/apps/server/dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, 'dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, 'node_modules/@vendure/dashboard/dist/vite/dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, 'node_modules/@vendure/dashboard/dist/dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, 'node_modules/@vendure/dashboard/dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, 'node_modules/@vendure/dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, '../dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, '../apps/server/dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, '../../dist/plugins/content/content.plugin.js'),
-    path.resolve(cwd, '../../apps/server/dist/plugins/content/content.plugin.js'),
-];
-
-let ContentPlugin: any = ImportedContentPlugin;
-for (const pluginPath of contentPluginCandidates) {
-    if (!fs.existsSync(pluginPath)) {
-        continue;
+// Lazy load ContentPlugin - only load when config is instantiated, not during build
+let contentPluginCache: any = null;
+function getContentPlugin(): any {
+    if (contentPluginCache) {
+        return contentPluginCache;
     }
+
+    const contentPluginPath = path.resolve(__dirname, '../dist/plugins/content/content.plugin.js');
+    
+    if (!fs.existsSync(contentPluginPath)) {
+        // During build, the dist might not exist yet - return null to skip
+        console.warn(`ContentPlugin dist not found at ${contentPluginPath} - skipping plugin load during build`);
+        return null;
+    }
+
     try {
-        ContentPlugin = require(pluginPath).ContentPlugin;
-        break;
-    } catch {
-        // ignore missing path or invalid file and try next
+        contentPluginCache = require(contentPluginPath).ContentPlugin;
+        return contentPluginCache;
+    } catch (err) {
+        console.error(`Failed to load ContentPlugin from ${contentPluginPath}:`, err);
+        return null;
     }
-}
-
-if (!ContentPlugin) {
-    const searchRoots = [
-        __dirname,
-        cwd,
-        path.resolve(cwd, 'apps'),
-        path.resolve(cwd, 'apps/server'),
-        path.resolve(cwd, 'node_modules'),
-    ];
-
-    const visited = new Set<string>();
-    const findFile = (dir: string, depth: number): string | undefined => {
-        if (depth < 0 || visited.has(dir)) {
-            return undefined;
-        }
-        visited.add(dir);
-
-        let entries: fs.Dirent[];
-        try {
-            entries = fs.readdirSync(dir, { withFileTypes: true });
-        } catch {
-            return undefined;
-        }
-
-        for (const entry of entries) {
-            if (entry.isFile() && entry.name === 'content.plugin.js') {
-                return path.join(dir, entry.name);
-            }
-        }
-
-        for (const entry of entries) {
-            if (entry.isDirectory()) {
-                const found = findFile(path.join(dir, entry.name), depth - 1);
-                if (found) {
-                    return found;
-                }
-            }
-        }
-
-        return undefined;
-    };
-
-    for (const root of searchRoots) {
-        if (!fs.existsSync(root)) {
-            continue;
-        }
-        const found = findFile(root, 5);
-        if (found) {
-            try {
-                ContentPlugin = require(found).ContentPlugin;
-                break;
-            } catch {
-                // ignore and continue searching
-            }
-        }
-    }
-}
-
-if (!ContentPlugin) {
-    throw new Error(`Unable to load ContentPlugin from any of: ${contentPluginCandidates.join(', ')}`);
 }
 
 const IS_DEV = process.env.APP_ENV === 'dev';
@@ -246,7 +166,7 @@ export const config: VendureConfig = {
             indexStockStatus: true,
         }),
 
-        ContentPlugin,
+        ...(getContentPlugin() ? [getContentPlugin()] : []),
 
         EmailPlugin.init({
                        devMode: true,
