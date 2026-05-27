@@ -8,18 +8,18 @@ export default defineConfig({
     build: {
         outDir: join(__dirname, 'dist/dashboard'),
         rollupOptions: {
-            // Prevent Rollup from trying to bundle runtime/compiled Vendure plugin
-            // files which are intended to be required at runtime by the server.
-            external: (id: string) => {
-                if (!id || typeof id !== 'string') return false;
-                // compiled plugin files under dist/plugins/content
-                if (id.includes('dist/plugins/content') || id.includes('content.plugin.js')) return true;
-                // Vendure dashboard compiled paths
-                if (id.includes('@vendure/dashboard/dist')) return true;
-                // treat node builtins as external
-                if (id.startsWith('node:')) return true;
-                return false;
-            },
+            // Prevent Rollup from trying to bundle runtime/compiled Vendure plugin files.
+            // Use regex patterns to match absolute and nested compiled paths encountered on CI.
+            external: [
+                /dist\/plugins\/content/, // compiled content plugin
+                /content\.plugin\.js/, // explicit file name
+                /@vendure\/dashboard\/dist/, // vendure dashboard compiled paths
+                /node_modules\/@vendure\/dashboard\/dist/, // alternative path
+                /^node:/, // node: builtins
+                'fs',
+                'path',
+                'os',
+            ],
         },
     },
     plugins: [
