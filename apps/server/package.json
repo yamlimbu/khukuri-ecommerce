@@ -35,11 +35,11 @@
     "pg": "8.20.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "lucide-react": "^0.544.0"
+    "lucide-react": "^0.544.0",
+    "concurrently": "9.2.1"
   },
   "devDependencies": {
     "@vendure/cli": "3.5.5",
-    "concurrently": "9.2.1",
     "ts-node": "10.9.2",
     "typescript": "5.8.2"
   }
