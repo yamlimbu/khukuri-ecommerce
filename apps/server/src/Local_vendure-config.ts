@@ -16,9 +16,11 @@ import { CustomAdminUiPlugin } from './plugins/custom-ui/custom-ui.plugin';
 declare const require: any;
 const contentPluginPaths = [
     path.resolve(__dirname, '../dist/plugins/content/content.plugin.js'),
-    path.resolve(__dirname, '../../../../../../apps/server/dist/plugins/content/content.plugin.js'),
+    path.resolve(__dirname, '../../dist/plugins/content/content.plugin.js'),
+    path.resolve(process.cwd(), 'dist/plugins/content/content.plugin.js'),
     path.resolve(process.cwd(), 'apps/server/dist/plugins/content/content.plugin.js'),
     path.resolve(process.cwd(), '../dist/plugins/content/content.plugin.js'),
+    path.resolve(process.cwd(), '../apps/server/dist/plugins/content/content.plugin.js'),
 ];
 let ContentPlugin: any;
 for (const pluginPath of contentPluginPaths) {
