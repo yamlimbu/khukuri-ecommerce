@@ -17,9 +17,10 @@ import { DashboardPlugin } from '@vendure/dashboard/plugin';
 import { GraphiqlPlugin } from '@vendure/graphiql-plugin';
 
 import 'dotenv/config';
-import fs from 'fs';
 import path from 'path';
 
+import { ContentPlugin } from './plugins/content/content.plugin';
+import { ContentPlugin as ImportedContentPlugin } from './plugins/content/content.plugin';
 import { CustomAdminUiPlugin } from './plugins/custom-ui/custom-ui.plugin';
 
 declare const require: any;
@@ -53,7 +54,7 @@ const contentPluginCandidates = [
     path.resolve(cwd, '../../apps/server/dist/plugins/content/content.plugin.js'),
 ];
 
-let ContentPlugin: any;
+let ContentPlugin: any = ImportedContentPlugin;
 for (const pluginPath of contentPluginCandidates) {
     if (!fs.existsSync(pluginPath)) {
         continue;
