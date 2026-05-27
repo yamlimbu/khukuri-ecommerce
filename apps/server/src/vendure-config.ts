@@ -21,6 +21,26 @@ import path from 'path';
 
 import { CustomAdminUiPlugin } from './plugins/custom-ui/custom-ui.plugin';
 
+declare const require: any;
+const contentPluginPaths = [
+    path.resolve(__dirname, '../dist/plugins/content/content.plugin.js'),
+    path.resolve(__dirname, '../../../../../../apps/server/dist/plugins/content/content.plugin.js'),
+    path.resolve(process.cwd(), 'apps/server/dist/plugins/content/content.plugin.js'),
+    path.resolve(process.cwd(), '../dist/plugins/content/content.plugin.js'),
+];
+let ContentPlugin: any;
+for (const pluginPath of contentPluginPaths) {
+    try {
+        ContentPlugin = require(pluginPath).ContentPlugin;
+        break;
+    } catch {
+        // ignore missing path and try next
+    }
+}
+if (!ContentPlugin) {
+    throw new Error(`Unable to load ContentPlugin from any of: ${contentPluginPaths.join(', ')}`);
+}
+
 const IS_DEV = process.env.APP_ENV === 'dev';
 
 const serverPort = Number(process.env.PORT) || 3000;
@@ -138,6 +158,8 @@ export const config: VendureConfig = {
             bufferUpdates: false,
             indexStockStatus: true,
         }),
+
+        ContentPlugin,
 
         EmailPlugin.init({
                        devMode: true,
