@@ -4,6 +4,9 @@ import {TopCategories} from "@/components/commerce/top-categories";
 import {Banner} from "@/components/layout/banner";
 import {TopViewedProducts} from "@/components/commerce/top-viewed-products";
 import {SITE_NAME, SITE_URL, buildCanonicalUrl} from "@/lib/metadata";
+import { query } from "@/lib/vendure/api";
+import { GetBannersQuery } from "@/lib/vendure/queries";
+import { normalizeAssetUrl } from "@/lib/utils";
 
 export const metadata: Metadata = {
     title: {
@@ -24,10 +27,24 @@ export const metadata: Metadata = {
 };
 
 export default async function Home(_props: PageProps<'/'>) {
+    const bannersResult = await query(GetBannersQuery).catch(() => null);
+    
+    // Map backend banners to HeroBanner type
+    const banners = bannersResult?.data?.banners?.map((b: any) => ({
+        id: b.id,
+        title: b.title,
+        subtitle: b.subtitle || undefined,
+        primaryButtonLabel: b.primaryButtonLabel || undefined,
+        primaryButtonLink: b.primaryButtonLink || undefined,
+        secondaryButtonLabel: b.secondaryButtonLabel || undefined,
+        secondaryButtonLink: b.secondaryButtonLink || undefined,
+        image: b.image ? normalizeAssetUrl(b.image.preview, b.image.updatedAt) : undefined
+    })) || [];
+
     return (
         <div className="min-h-screen">
             {/* <Banner/> */}
-            <HeroSection/>
+            <HeroSection banners={banners} />
             <TopViewedProducts/>
             <TopCategories/>
 

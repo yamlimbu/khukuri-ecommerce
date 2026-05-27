@@ -20,6 +20,7 @@ import 'dotenv/config';
 import path from 'path';
 
 import { CustomAdminUiPlugin } from './plugins/custom-ui/custom-ui.plugin';
+import { ContentPlugin } from './plugins/content/content.plugin';
 
 const IS_DEV = process.env.APP_ENV === 'dev';
 
@@ -97,6 +98,7 @@ export const config: VendureConfig = {
               }),
 
         synchronize: false,
+        migrationsRun: true,
 
         migrations: [
             path.join(__dirname, './migrations/*.+(js|ts)'),
@@ -194,6 +196,7 @@ export const config: VendureConfig = {
         }),
 
         CustomAdminUiPlugin,
+        ContentPlugin,
     ],
 };
 

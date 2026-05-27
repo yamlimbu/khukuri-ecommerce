@@ -447,3 +447,37 @@ export const GetCollectionProductsQuery = graphql(`
         }
     }
 `, [ProductCardFragment]);
+
+export const GetBannersQuery = graphql(`
+    query GetBanners {
+        banners {
+            id
+            title
+            subtitle
+            image {
+                id
+                preview
+                updatedAt
+            }
+            primaryButtonLabel
+            primaryButtonLink
+            secondaryButtonLabel
+            secondaryButtonLink
+        }
+    }
+`);
+
+export const GetPageBySlugQuery = graphql(`
+    query GetPageBySlug($slug: String!) {
+        pageBySlug(slug: $slug) {
+            id
+            title
+            content
+            featuredImage {
+                id
+                preview
+                updatedAt
+            }
+        }
+    }
+`);

@@ -31,13 +31,15 @@ const mockBanners: HeroBanner[] = [
         image: "https://www.thekhukurihouse.com/public/images/upload/product/extraimages/predator-kukri-sword.jpg"
     }
 ];
-export function HeroSection() {
+export function HeroSection({ banners = [] }: { banners?: HeroBanner[] }) {
+    const displayBanners = banners.length > 0 ? banners : mockBanners;
+
     return (
         <section className="relative bg-background overflow-hidden border-b border-border">
             {/* Background Pattern/Gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-background to-background dark:from-zinc-900 dark:via-zinc-950 dark:to-black opacity-90" />
 
-            <HeroCarousel banners={mockBanners} />
+            <HeroCarousel banners={displayBanners} />
         </section>
     );
 }
