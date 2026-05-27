@@ -48,11 +48,11 @@ function getContentPlugin(): any {
     }
 }
 
-const IS_DEV = process.env.APP_ENV === 'dev' || process.env.NODE_ENV === 'development';
+const IS_DEV = process.env.NODE_ENV === 'development';
 const TRUST_PROXY_ENV = process.env.TRUST_PROXY;
 const trustProxy = typeof TRUST_PROXY_ENV === 'string'
     ? TRUST_PROXY_ENV !== 'false' && TRUST_PROXY_ENV !== '0'
-    : !IS_DEV;
+    : process.env.NODE_ENV === 'production';
 
 const serverPort = Number(process.env.PORT) || 3000;
 
