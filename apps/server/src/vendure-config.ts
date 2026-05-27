@@ -37,8 +37,16 @@ const contentPluginCandidates = [
     path.resolve(cwd, 'apps/server/dist/plugins/content/content.plugin.js'),
     path.resolve(cwd, 'apps/server/apps/dist/plugins/content/content.plugin.js'),
     path.resolve(cwd, 'apps/server/apps/server/dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, 'apps/server/apps/server/apps/dist/plugins/content/content.plugin.js'),
     path.resolve(cwd, 'apps/server/apps/apps/server/dist/plugins/content/content.plugin.js'),
     path.resolve(cwd, 'apps/apps/server/dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, 'apps/apps/apps/server/dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, 'apps/apps/apps/apps/server/dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, 'dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, 'node_modules/@vendure/dashboard/dist/vite/dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, 'node_modules/@vendure/dashboard/dist/dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, 'node_modules/@vendure/dashboard/dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, 'node_modules/@vendure/dist/plugins/content/content.plugin.js'),
     path.resolve(cwd, '../dist/plugins/content/content.plugin.js'),
     path.resolve(cwd, '../apps/server/dist/plugins/content/content.plugin.js'),
     path.resolve(cwd, '../../dist/plugins/content/content.plugin.js'),
@@ -57,6 +65,64 @@ for (const pluginPath of contentPluginCandidates) {
         // ignore missing path or invalid file and try next
     }
 }
+
+if (!ContentPlugin) {
+    const searchRoots = [
+        __dirname,
+        cwd,
+        path.resolve(cwd, 'apps'),
+        path.resolve(cwd, 'apps/server'),
+        path.resolve(cwd, 'node_modules'),
+    ];
+
+    const visited = new Set<string>();
+    const findFile = (dir: string, depth: number): string | undefined => {
+        if (depth < 0 || visited.has(dir)) {
+            return undefined;
+        }
+        visited.add(dir);
+
+        let entries: fs.Dirent[];
+        try {
+            entries = fs.readdirSync(dir, { withFileTypes: true });
+        } catch {
+            return undefined;
+        }
+
+        for (const entry of entries) {
+            if (entry.isFile() && entry.name === 'content.plugin.js') {
+                return path.join(dir, entry.name);
+            }
+        }
+
+        for (const entry of entries) {
+            if (entry.isDirectory()) {
+                const found = findFile(path.join(dir, entry.name), depth - 1);
+                if (found) {
+                    return found;
+                }
+            }
+        }
+
+        return undefined;
+    };
+
+    for (const root of searchRoots) {
+        if (!fs.existsSync(root)) {
+            continue;
+        }
+        const found = findFile(root, 5);
+        if (found) {
+            try {
+                ContentPlugin = require(found).ContentPlugin;
+                break;
+            } catch {
+                // ignore and continue searching
+            }
+        }
+    }
+}
+
 if (!ContentPlugin) {
     throw new Error(`Unable to load ContentPlugin from any of: ${contentPluginCandidates.join(', ')}`);
 }
