@@ -17,36 +17,48 @@ import { DashboardPlugin } from '@vendure/dashboard/plugin';
 import { GraphiqlPlugin } from '@vendure/graphiql-plugin';
 
 import 'dotenv/config';
+import fs from 'fs';
 import path from 'path';
 
 import { CustomAdminUiPlugin } from './plugins/custom-ui/custom-ui.plugin';
 
 declare const require: any;
-const contentPluginPaths = [
-    // Common local build outputs
+const cwd = process.cwd();
+const contentPluginCandidates = [
+    // Paths relative to the compiled config temp folder used by Vendure Dashboard
     path.resolve(__dirname, '../dist/plugins/content/content.plugin.js'),
     path.resolve(__dirname, '../../dist/plugins/content/content.plugin.js'),
-    path.resolve(process.cwd(), 'dist/plugins/content/content.plugin.js'),
-    path.resolve(process.cwd(), 'apps/server/dist/plugins/content/content.plugin.js'),
-    path.resolve(process.cwd(), '../dist/plugins/content/content.plugin.js'),
-    path.resolve(process.cwd(), '../apps/server/dist/plugins/content/content.plugin.js'),
-    // Additional monorepo / Render build layouts
-    path.resolve(process.cwd(), 'apps/dist/plugins/content/content.plugin.js'),
-    path.resolve(process.cwd(), 'apps/apps/server/dist/plugins/content/content.plugin.js'),
-    path.resolve(process.cwd(), '../../apps/server/dist/plugins/content/content.plugin.js'),
-    path.resolve(process.cwd(), '../../dist/plugins/content/content.plugin.js'),
+    path.resolve(__dirname, '../../../dist/plugins/content/content.plugin.js'),
+    path.resolve(__dirname, '../../../../dist/plugins/content/content.plugin.js'),
+
+    // Common repo layout paths from the workspace root
+    path.resolve(cwd, 'dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, 'apps/dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, 'apps/server/dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, 'apps/server/apps/dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, 'apps/server/apps/server/dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, 'apps/server/apps/apps/server/dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, 'apps/apps/server/dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, '../dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, '../apps/server/dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, '../../dist/plugins/content/content.plugin.js'),
+    path.resolve(cwd, '../../apps/server/dist/plugins/content/content.plugin.js'),
 ];
+
 let ContentPlugin: any;
-for (const pluginPath of contentPluginPaths) {
+for (const pluginPath of contentPluginCandidates) {
+    if (!fs.existsSync(pluginPath)) {
+        continue;
+    }
     try {
         ContentPlugin = require(pluginPath).ContentPlugin;
         break;
     } catch {
-        // ignore missing path and try next
+        // ignore missing path or invalid file and try next
     }
 }
 if (!ContentPlugin) {
-    throw new Error(`Unable to load ContentPlugin from any of: ${contentPluginPaths.join(', ')}`);
+    throw new Error(`Unable to load ContentPlugin from any of: ${contentPluginCandidates.join(', ')}`);
 }
 
 const IS_DEV = process.env.APP_ENV === 'dev';
