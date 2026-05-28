@@ -128,7 +128,7 @@ const shopApiExtensions = gql`
  */
 @Module({
     imports: [PluginCommonModule, TypeOrmModule.forFeature([Banner])],
-    providers: [BannerService],
+    providers: [BannerService, AdminBannerResolver, ShopBannerResolver],
     exports: [BannerService],
 })
 export class ContentPluginModule {}

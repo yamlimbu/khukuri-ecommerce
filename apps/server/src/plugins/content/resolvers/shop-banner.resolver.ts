@@ -3,11 +3,11 @@ import { RequestContext, Ctx } from '@vendure/core';
 import { BannerService } from '../services/banner.service';
 import { Banner } from '../entities/banner.entity';
 
-@Resolver('Banner')
+@Resolver()
 export class ShopBannerResolver {
     constructor(private bannerService: BannerService) {}
 
-    @Query()
+    @Query('banners')
     async banners(
         @Ctx() ctx: RequestContext
     ): Promise<Banner[]> {

@@ -3,11 +3,11 @@ import { RequestContext, Ctx, Allow, Permission } from '@vendure/core';
 import { BannerService } from '../services/banner.service';
 import { Banner } from '../entities/banner.entity';
 
-@Resolver('Banner')
+@Resolver()
 export class AdminBannerResolver {
     constructor(private bannerService: BannerService) {}
 
-    @Query()
+    @Query('banners')
     @Allow(Permission.SuperAdmin)
     async banners(
         @Ctx() ctx: RequestContext,
@@ -16,7 +16,7 @@ export class AdminBannerResolver {
         return this.bannerService.findAll(ctx, options);
     }
 
-    @Query()
+    @Query('banner')
     @Allow(Permission.SuperAdmin)
     async banner(
         @Ctx() ctx: RequestContext,
@@ -25,7 +25,7 @@ export class AdminBannerResolver {
         return this.bannerService.findOne(ctx, id);
     }
 
-    @Mutation()
+    @Mutation('createBanner')
     @Allow(Permission.SuperAdmin)
     async createBanner(
         @Ctx() ctx: RequestContext,
@@ -34,7 +34,7 @@ export class AdminBannerResolver {
         return this.bannerService.create(ctx, input);
     }
 
-    @Mutation()
+    @Mutation('updateBanner')
     @Allow(Permission.SuperAdmin)
     async updateBanner(
         @Ctx() ctx: RequestContext,
@@ -44,7 +44,7 @@ export class AdminBannerResolver {
         return this.bannerService.update(ctx, id, input);
     }
 
-    @Mutation()
+    @Mutation('deleteBanner')
     @Allow(Permission.SuperAdmin)
     async deleteBanner(
         @Ctx() ctx: RequestContext,
