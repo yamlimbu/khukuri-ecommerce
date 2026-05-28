@@ -10,6 +10,7 @@
     "build": "tsc && npm run build:dashboard",
     "build:dashboard": "vite build",
     "start:server": "node ./dist/index.js",
+    "prestart:server": "npm run build",
     "start:worker": "node ./dist/index-worker.js",
     "start": "concurrently npm:start:*"
   },
