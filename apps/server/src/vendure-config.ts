@@ -21,52 +21,9 @@ import fs from 'fs';
 import path from 'path';
 
 import { CustomAdminUiPlugin } from './plugins/custom-ui/custom-ui.plugin';
+import { ContentPlugin } from './plugins/content/content.plugin';
 
 declare const require: any;
-
-// Lazy load ContentPlugin - only load when config is instantiated, not during build
-let contentPluginCache: any = null;
-function getContentPlugin(): any {
-    if (contentPluginCache) {
-        return contentPluginCache;
-    }
-
-    // Try a list of likely locations for the compiled ContentPlugin.
-    const candidatePaths = [
-        // When running from compiled `apps/server/dist` (common production path)
-        path.resolve(__dirname, 'plugins/content/content.plugin.js'),
-        // When __dirname is `apps/server/dist` but compiled plugin was output to ../dist/plugins
-        path.resolve(__dirname, '../dist/plugins/content/content.plugin.js'),
-        // When running from repository root with dist in ./dist
-        path.resolve(process.cwd(), 'dist/plugins/content/content.plugin.js'),
-        // Monorepo-style path used in some CI environments
-        path.resolve(process.cwd(), 'apps/server/dist/plugins/content/content.plugin.js'),
-    ];
-
-    let foundPath: string | null = null;
-    for (const p of candidatePaths) {
-        if (fs.existsSync(p)) {
-            foundPath = p;
-            break;
-        }
-    }
-
-    if (!foundPath) {
-        console.warn(`ContentPlugin dist not found in candidate paths, skipping plugin load. Tried: ${candidatePaths.join(', ')}`);
-        return null;
-    }
-
-    console.log(`ContentPlugin: found compiled plugin at ${foundPath}`);
-
-    try {
-        contentPluginCache = require(foundPath).ContentPlugin;
-        console.log(`ContentPlugin: loaded ContentPlugin from ${foundPath}`);
-        return contentPluginCache;
-    } catch (err) {
-        console.error(`Failed to load ContentPlugin from ${foundPath}:`, err);
-        return null;
-    }
-}
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 const TRUST_PROXY_ENV = process.env.TRUST_PROXY;
@@ -203,7 +160,7 @@ export const config: VendureConfig = {
             indexStockStatus: true,
         }),
 
-        ...(getContentPlugin() ? [getContentPlugin()] : []),
+        ContentPlugin,
 
         EmailPlugin.init({
                        devMode: true,
