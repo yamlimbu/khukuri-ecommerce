@@ -90,7 +90,6 @@ const adminApiExtensions = gql`
 
     extend type Query {
         banners(options: BannerListOptions): BannerList!
-        banner(id: ID!): Banner
     }
 
     extend type Mutation {

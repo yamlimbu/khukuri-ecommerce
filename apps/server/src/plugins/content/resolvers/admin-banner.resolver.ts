@@ -16,15 +16,6 @@ export class AdminBannerResolver {
         return this.bannerService.findAll(ctx, options);
     }
 
-    @Query('banner')
-    @Allow(Permission.SuperAdmin)
-    async banner(
-        @Ctx() ctx: RequestContext,
-        @Args('id') id: string
-    ): Promise<Banner | null> {
-        return this.bannerService.findOne(ctx, id);
-    }
-
     @Mutation('createBanner')
     @Allow(Permission.SuperAdmin)
     async createBanner(
