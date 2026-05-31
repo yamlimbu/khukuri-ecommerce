@@ -22,23 +22,36 @@ import path from 'path';
 import { CustomAdminUiPlugin } from './plugins/custom-ui/custom-ui.plugin';
 
 declare const require: any;
+
 const contentPluginPaths = [
     path.resolve(__dirname, '../dist/plugins/content/content.plugin.js'),
     path.resolve(__dirname, '../../../../../../apps/server/dist/plugins/content/content.plugin.js'),
     path.resolve(process.cwd(), 'apps/server/dist/plugins/content/content.plugin.js'),
     path.resolve(process.cwd(), '../dist/plugins/content/content.plugin.js'),
 ];
+
 let ContentPlugin: any;
+
 for (const pluginPath of contentPluginPaths) {
     try {
-        ContentPlugin = require(pluginPath).ContentPlugin;
+        console.log('Trying ContentPlugin:', pluginPath);
+
+        const plugin = require(pluginPath);
+
+        ContentPlugin = plugin.ContentPlugin;
+
+        console.log('Loaded ContentPlugin from:', pluginPath);
+
         break;
-    } catch {
-        // ignore missing path and try next
+    } catch (err) {
+        console.log('Failed ContentPlugin path:', pluginPath);
     }
 }
+
 if (!ContentPlugin) {
-    throw new Error(`Unable to load ContentPlugin from any of: ${contentPluginPaths.join(', ')}`);
+    throw new Error(
+        `Unable to load ContentPlugin from any of: ${contentPluginPaths.join(', ')}`
+    );
 }
 
 const IS_DEV = process.env.APP_ENV === 'dev';
@@ -71,7 +84,7 @@ export const config: VendureConfig = {
 
         cors: {
             origin: [
-                'http://localhost:3000','https://khukuri-ecommerce.onrender.com',
+                'http://localhost:3000', 'https://khukuri-ecommerce.onrender.com',
                 'http://localhost:3001',
                 'https://khukuri1-store.vercel.app',
             ],
@@ -104,17 +117,17 @@ export const config: VendureConfig = {
 
         ...(isLocal
             ? {
-                  database: process.env.DB_NAME,
-                  schema: process.env.DB_SCHEMA,
-                  host: process.env.DB_HOST,
-                  port: +process.env.DB_PORT!,
-                  username: process.env.DB_USERNAME,
-                  password: process.env.DB_PASSWORD,
-              }
+                database: process.env.DB_NAME,
+                schema: process.env.DB_SCHEMA,
+                host: process.env.DB_HOST,
+                port: +process.env.DB_PORT!,
+                username: process.env.DB_USERNAME,
+                password: process.env.DB_PASSWORD,
+            }
             : {
-                  // Remote env uses DATABASE_URL
-                  url: process.env.DATABASE_URL!,
-              }),
+                // Remote env uses DATABASE_URL
+                url: process.env.DATABASE_URL!,
+            }),
 
         synchronize: false,
 
@@ -162,7 +175,7 @@ export const config: VendureConfig = {
         ContentPlugin,
 
         EmailPlugin.init({
-                       devMode: true,
+            devMode: true,
 
             outputPath: path.join(
                 __dirname,
@@ -183,28 +196,28 @@ export const config: VendureConfig = {
 
             ...(isLocal
                 ? {
-                      globalTemplateVars: {
-                          // The following variables will change depending on your storefront implementation.
-                          // Here we are assuming a storefront running at http://localhost:3001.
-                          fromAddress: '"example" <noreply@example.com>',
-                          verifyEmailAddressUrl: `${frontendBaseUrl}/verify`,
-                          passwordResetUrl: `${frontendBaseUrl}/password-reset`,
-                          changeEmailAddressUrl: `${frontendBaseUrl}/verify-email-address-change`,
-                      },
-                  }
+                    globalTemplateVars: {
+                        // The following variables will change depending on your storefront implementation.
+                        // Here we are assuming a storefront running at http://localhost:3001.
+                        fromAddress: '"example" <noreply@example.com>',
+                        verifyEmailAddressUrl: `${frontendBaseUrl}/verify`,
+                        passwordResetUrl: `${frontendBaseUrl}/password-reset`,
+                        changeEmailAddressUrl: `${frontendBaseUrl}/verify-email-address-change`,
+                    },
+                }
                 : {
-                      // Remote env uses DATABASE_URL
-                      globalTemplateVars: {
-                          fromAddress: '"Khukuri Store" <noreply@khukuri.com>',
-                          verifyEmailAddressUrl: `${frontendBaseUrl}/verify`,
-                          passwordResetUrl: `${frontendBaseUrl}/password-reset`,
-                          changeEmailAddressUrl: `${frontendBaseUrl}/verify-email-address-change`,
-                      },
-                  }),
+                    // Remote env uses DATABASE_URL
+                    globalTemplateVars: {
+                        fromAddress: '"Khukuri Store" <noreply@khukuri.com>',
+                        verifyEmailAddressUrl: `${frontendBaseUrl}/verify`,
+                        passwordResetUrl: `${frontendBaseUrl}/password-reset`,
+                        changeEmailAddressUrl: `${frontendBaseUrl}/verify-email-address-change`,
+                    },
+                }),
 
 
-            
-            
+
+
         }),
 
         DashboardPlugin.init({
