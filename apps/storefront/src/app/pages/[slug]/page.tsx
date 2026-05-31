@@ -1,36 +1,42 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { query } from "@/lib/vendure/api";
+import { SITE_NAME } from "@/lib/metadata";
 import { GetPageBySlugQuery } from "@/lib/vendure/queries";
 import { normalizeAssetUrl } from "@/lib/utils";
 import Image from "next/image";
-import { SITE_NAME } from "@/lib/metadata";
 
 interface PageProps {
-    params: {
-        slug: string;
+    params: { slug: string };
+}
+
+interface PageData {
+    title: string;
+    content: string;
+    featuredImage?: {
+        preview: string;
+        updatedAt: string;
     };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const result = await query(GetPageBySlugQuery, { slug: params.slug }).catch(() => null);
-    const page = result?.data?.pageBySlug;
-
+    const page = result?.data?.pageBySlug as PageData | null;
     if (!page) {
         return {
             title: `Page Not Found - ${SITE_NAME}`,
         };
     }
-
+    const { title } = page;
     return {
-        title: `${page.title} - ${SITE_NAME}`,
-        description: `Read about ${page.title} on Khukuri House.`,
+        title: `${title} - ${SITE_NAME}`,
+        description: `Read about ${title} on Khukuri House.`,
     };
 }
 
 export default async function DynamicPage({ params }: PageProps) {
     const result = await query(GetPageBySlugQuery, { slug: params.slug }).catch(() => null);
-    const page = result?.data?.pageBySlug;
+    const page = result?.data?.pageBySlug as PageData;
 
     if (!page) {
         notFound();
