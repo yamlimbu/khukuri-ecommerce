@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-import React, { useEffect } from 'react';
-import { defineDashboardExtension } from '@vendure/dashboard';
-import { BannersList } from './components/BannersList';
-import { BannerDetail } from './components/BannerDetail';
-import { PagesList } from './components/PagesList';
-import { PageDetail } from './components/PageDetail';
-=======
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     defineDashboardExtension,
@@ -138,7 +130,6 @@ const normalizeBannerInput = (form: BannerFormValues) => ({
     secondaryButtonLink: form.secondaryButtonLink || null,
     order: form.order,
 });
->>>>>>> 0844e0a0a5955b90f23b30b5577edf88bcb41bbf
 
 const LoginPageTitle = () => {
     useEffect(() => {
@@ -611,11 +602,6 @@ const BannerPage = () => {
     );
 };
 
-<<<<<<< HEAD
-// Wrapper removed; BannerDetail will receive id via route params
-
-// Wrapper removed; PageDetail will receive id via route params
-=======
 const PagesPage = () => (
     <Page pageId="pages-page">
         <PageTitle>Page</PageTitle>
@@ -643,7 +629,6 @@ const SettingsPage = () => (
         </PageLayout>
     </Page>
 );
->>>>>>> 0844e0a0a5955b90f23b30b5577edf88bcb41bbf
 
 export default defineDashboardExtension({
     navSections: [
@@ -694,41 +679,5 @@ export default defineDashboardExtension({
             component: LoginPageTitle,
         },
     },
-    navSections: [
-        {
-            id: 'content-management',
-            title: 'Content',
-            placement: 'top',
-            icon: FileText,
-        },
-    ],
-    routes: [
-        {
-            path: '/banners',
-            component: BannersList,
-            navMenuItem: {
-                sectionId: 'content-management',
-                id: 'banners',
-                title: 'Banners',
-            },
-        },
-        {
-            path: '/banners/:id',
-            component: BannerDetail,
-        },
-        {
-            path: '/pages',
-            component: PagesList,
-            navMenuItem: {
-                sectionId: 'content-management',
-                id: 'pages',
-                title: 'Pages',
-            },
-        },
-        {
-            path: '/pages/:id',
-            component: PageDetail,
-        },
-    ],
 });
 
