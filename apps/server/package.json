@@ -11,7 +11,7 @@
     "build:dashboard": "vite build",
     "start:server": "node ./dist/index.js",
     "start:worker": "node ./dist/index-worker.js",
-    "start": "concurrently npm:start:*"
+    "start": "npm run start:server"
   },
   "dependencies": {
     "@tiptap/extension-floating-menu": "^3.20.4",
@@ -34,11 +34,12 @@
     "dotenv": "17.3.1",
     "pg": "8.20.0",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "lucide-react": "^0.544.0",
+    "concurrently": "9.2.1"
   },
   "devDependencies": {
     "@vendure/cli": "3.5.5",
-    "concurrently": "9.2.1",
     "ts-node": "10.9.2",
     "typescript": "5.8.2"
   }

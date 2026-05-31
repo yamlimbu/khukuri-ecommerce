@@ -15,6 +15,7 @@
     "start": "concurrently -n server,storefront -c blue,magenta \"npm run start -w server\" \"npm run start -w storefront\"",
     "start:server": "npm run start -w server",
     "start:storefront": "npm run start -w storefront",
+    "prestart": "npm run build",
     "postinstall": "node -e \"if (process.env.VERCEL !== '1') { const { execSync } = require('child_process'); const { join } = require('path'); const bin = join(__dirname, 'node_modules', '.bin', process.platform === 'win32' ? 'patch-package.cmd' : 'patch-package'); try { execSync(bin, { stdio: 'inherit' }); } catch (err) { console.warn('patch-package is unavailable; skipping patch application.'); } }\""
   },
   "devDependencies": {

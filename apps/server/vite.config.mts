@@ -4,9 +4,23 @@ import { pathToFileURL } from 'url';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-    base: '/dashboard',
+    base: '/dashboard/',
     build: {
         outDir: join(__dirname, 'dist/dashboard'),
+        rollupOptions: {
+            // Prevent Rollup from trying to bundle runtime/compiled Vendure plugin files.
+            // Use regex patterns to match absolute and nested compiled paths encountered on CI.
+            external: [
+                /dist\/plugins\/content/, // compiled content plugin
+                /content\.plugin\.js/, // explicit file name
+                /@vendure\/dashboard\/dist/, // vendure dashboard compiled paths
+                /node_modules\/@vendure\/dashboard\/dist/, // alternative path
+                /^node:/, // node: builtins
+                'fs',
+                'path',
+                'os',
+            ],
+        },
     },
     plugins: [
         vendureDashboardPlugin({
