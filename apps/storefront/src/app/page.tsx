@@ -1,4 +1,5 @@
 import type {Metadata} from "next";
+import {HeroBanner, HeroCarousel} from "@/components/layout/hero-carousel";
 import {HeroSection} from "@/components/layout/hero-section";
 import {TopCategories} from "@/components/commerce/top-categories";
 import {Banner} from "@/components/layout/banner";
@@ -35,9 +36,9 @@ export default async function Home(_props: PageProps<'/'>) {
     title: b.title,
     subtitle: b.subtitle || undefined,
     primaryButtonLabel: b.primaryButtonLabel || undefined,
-    primaryButtonLink: b.primaryButtonLink || undefined,
+    primaryButtonLink: b.primaryButtonLink || '/',
     secondaryButtonLabel: b.secondaryButtonLabel || undefined,
-    secondaryButtonLink: b.secondaryButtonLink || undefined,
+    secondaryButtonLink: b.secondaryButtonLink || '/',
     image: b.image ? normalizeAssetUrl(b.image.preview, b.image.updatedAt) : undefined,
 }));
 

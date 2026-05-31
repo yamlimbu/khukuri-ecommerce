@@ -23,10 +23,11 @@ function isAbortError(error: unknown): boolean {
     );
 }
 
-export function HeroSection() {
-    const [banners, setBanners] = useState<HeroBanner[]>(mockBanners);
+export function HeroSection({ banners: propBanners }: { banners?: HeroBanner[] }) {
+    const [banners, setBanners] = useState<HeroBanner[]>(propBanners ?? mockBanners);
 
     useEffect(() => {
+        if (propBanners) return; // Use provided banners, skip fetching
         const controller = new AbortController();
         const apiUrl = getBannerApiUrl();
 
@@ -74,7 +75,7 @@ export function HeroSection() {
                     subtitle: banner.subtitle ?? '',
                     image: banner.image?.preview ?? undefined,
                     primaryButtonLabel: banner.primaryButtonLabel ?? '',
-                    primaryButtonLink: banner.primaryButtonLink ?? '/search',
+                    primaryButtonLink: banner.primaryButtonLink ?? '/',
                     secondaryButtonLabel: banner.secondaryButtonLabel ?? undefined,
                     secondaryButtonLink: banner.secondaryButtonLink ?? undefined,
                 })) as HeroBanner[];
@@ -96,7 +97,7 @@ export function HeroSection() {
         fetchBanners();
 
         return () => controller.abort();
-    }, []);
+    }, [propBanners]);
 
     if (banners.length === 0) {
         return null;

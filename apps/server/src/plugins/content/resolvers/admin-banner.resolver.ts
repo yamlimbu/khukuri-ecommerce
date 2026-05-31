@@ -29,10 +29,9 @@ export class AdminBannerResolver {
     @Allow(Permission.SuperAdmin)
     async updateBanner(
         @Ctx() ctx: RequestContext,
-        @Args('id') id: string,
         @Args('input') input: any
     ): Promise<Banner> {
-        return this.bannerService.update(ctx, id, input);
+        return this.bannerService.update(ctx, input);
     }
 
     @Mutation('deleteBanner')
@@ -41,6 +40,7 @@ export class AdminBannerResolver {
         @Ctx() ctx: RequestContext,
         @Args('id') id: string
     ): Promise<boolean> {
-        return this.bannerService.delete(ctx, id);
+        const result = await this.bannerService.delete(ctx, id);
+        return result?.result === 'DELETED';
     }
 }
