@@ -29,7 +29,6 @@ export const metadata: Metadata = {
 
 export default async function Home(_props: PageProps<'/'>) {
     const bannersResult = await query(GetBannersQuery).catch(() => null);
-    
     // Map backend banners to HeroBanner type
     const banners: HeroBanner[] = (bannersResult?.data?.banners as any[] ?? []).map((b: any) => ({
     id: b.id,
