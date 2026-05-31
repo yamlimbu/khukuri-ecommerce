@@ -30,16 +30,16 @@ export default async function Home(_props: PageProps<'/'>) {
     const bannersResult = await query(GetBannersQuery).catch(() => null);
     
     // Map backend banners to HeroBanner type
-    const banners = bannersResult?.data?.banners?.map((b: any) => ({
-        id: b.id,
-        title: b.title,
-        subtitle: b.subtitle || undefined,
-        primaryButtonLabel: b.primaryButtonLabel || undefined,
-        primaryButtonLink: b.primaryButtonLink || undefined,
-        secondaryButtonLabel: b.secondaryButtonLabel || undefined,
-        secondaryButtonLink: b.secondaryButtonLink || undefined,
-        image: b.image ? normalizeAssetUrl(b.image.preview, b.image.updatedAt) : undefined
-    })) || [];
+    const banners: HeroBanner[] = (bannersResult?.data?.banners as any[] ?? []).map((b: any) => ({
+    id: b.id,
+    title: b.title,
+    subtitle: b.subtitle || undefined,
+    primaryButtonLabel: b.primaryButtonLabel || undefined,
+    primaryButtonLink: b.primaryButtonLink || undefined,
+    secondaryButtonLabel: b.secondaryButtonLabel || undefined,
+    secondaryButtonLink: b.secondaryButtonLink || undefined,
+    image: b.image ? normalizeAssetUrl(b.image.preview, b.image.updatedAt) : undefined,
+}));
 
     return (
         <div className="min-h-screen">
