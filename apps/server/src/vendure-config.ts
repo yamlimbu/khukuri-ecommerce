@@ -19,40 +19,13 @@ import { GraphiqlPlugin } from '@vendure/graphiql-plugin';
 import 'dotenv/config';
 import path from 'path';
 
+
+
+
 import { CustomAdminUiPlugin } from './plugins/custom-ui/custom-ui.plugin';
+import { ContentPlugin } from './plugins/content/content.plugin';
 
-declare const require: any;
 
-const contentPluginPaths = [
-    path.resolve(__dirname, '../dist/plugins/content/content.plugin.js'),
-    path.resolve(__dirname, '../../../../../../apps/server/dist/plugins/content/content.plugin.js'),
-    path.resolve(process.cwd(), 'apps/server/dist/plugins/content/content.plugin.js'),
-    path.resolve(process.cwd(), '../dist/plugins/content/content.plugin.js'),
-];
-
-let ContentPlugin: any;
-
-for (const pluginPath of contentPluginPaths) {
-    try {
-        console.log('Trying ContentPlugin:', pluginPath);
-
-        const plugin = require(pluginPath);
-
-        ContentPlugin = plugin.ContentPlugin;
-
-        console.log('Loaded ContentPlugin from:', pluginPath);
-
-        break;
-    } catch (err) {
-        console.log('Failed ContentPlugin path:', pluginPath);
-    }
-}
-
-if (!ContentPlugin) {
-    throw new Error(
-        `Unable to load ContentPlugin from any of: ${contentPluginPaths.join(', ')}`
-    );
-}
 
 const IS_DEV = process.env.APP_ENV === 'dev';
 
@@ -130,6 +103,7 @@ export const config: VendureConfig = {
             }),
 
         synchronize: false,
+        migrationsRun: true,
 
         migrations: [
             path.join(__dirname, './migrations/*.+(js|ts)'),
@@ -172,7 +146,6 @@ export const config: VendureConfig = {
             indexStockStatus: true,
         }),
 
-        ContentPlugin,
 
         EmailPlugin.init({
             devMode: true,
@@ -229,6 +202,7 @@ export const config: VendureConfig = {
         }),
 
         CustomAdminUiPlugin,
+        ContentPlugin,
     ],
 };
 

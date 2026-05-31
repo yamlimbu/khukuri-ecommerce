@@ -1,42 +1,33 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
-import { Asset } from '@vendure/core';
+import { VendureEntity, Asset, DeepPartial } from '@vendure/core';
+import { Column, Entity, ManyToOne } from 'typeorm';
 
-@Entity('banner')
-export class Banner {
-    @PrimaryColumn('varchar')
-    id: string;
+@Entity()
+export class Banner extends VendureEntity {
+    constructor(input?: DeepPartial<Banner>) {
+        super(input);
+    }
 
-    @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP' })
-    createdAt: Date;
-
-    @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP' })
-    updatedAt: Date;
-
-    @Column('varchar', { length: 255 })
+    @Column()
     title: string;
 
-    @Column('varchar', { nullable: true, length: 255 })
-    subtitle?: string;
+    @Column({ nullable: true })
+    subtitle: string;
 
-    @Column('varchar', { nullable: true, length: 255 })
-    imageId?: string;
+    @ManyToOne(() => Asset, { nullable: true, eager: true })
+    image: Asset;
 
-    @ManyToOne(() => Asset, { eager: true, onDelete: 'SET NULL' })
-    @JoinColumn({ name: 'imageId' })
-    image?: Asset;
+    @Column({ nullable: true })
+    primaryButtonLabel: string;
 
-    @Column('varchar', { nullable: true, length: 255 })
-    primaryButtonLabel?: string;
+    @Column({ nullable: true })
+    primaryButtonLink: string;
 
-    @Column('varchar', { nullable: true, length: 255 })
-    primaryButtonLink?: string;
+    @Column({ nullable: true })
+    secondaryButtonLabel: string;
 
-    @Column('varchar', { nullable: true, length: 255 })
-    secondaryButtonLabel?: string;
+    @Column({ nullable: true })
+    secondaryButtonLink: string;
 
-    @Column('varchar', { nullable: true, length: 255 })
-    secondaryButtonLink?: string;
-
-    @Column('int', { default: 0 })
+    @Column({ default: 0 })
     order: number;
 }

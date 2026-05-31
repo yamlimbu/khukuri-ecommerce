@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { VendurePlugin, PluginCommonModule, VendureConfig } from '@vendure/core';
 import { gql } from 'graphql-tag';
 import { Module } from '@nestjs/common';
@@ -146,5 +147,31 @@ export class ContentPluginModule {}
         schema: shopApiExtensions,
         resolvers: [ShopBannerResolver],
     },
+=======
+import { PluginCommonModule, Type, VendurePlugin } from '@vendure/core';
+import { Banner } from './entities/banner.entity';
+import { Page } from './entities/page.entity';
+import { adminApiExtensions, shopApiExtensions } from './api/api-extensions';
+import { ContentAdminResolver, ContentShopResolver } from './api/resolvers';
+import { BannerService } from './services/banner.service';
+import { PageService } from './services/page.service';
+
+@VendurePlugin({
+    imports: [PluginCommonModule],
+    entities: [Banner, Page],
+    adminApiExtensions: {
+        schema: adminApiExtensions,
+        resolvers: [ContentAdminResolver],
+    },
+    shopApiExtensions: {
+        schema: shopApiExtensions,
+        resolvers: [ContentShopResolver],
+    },
+    providers: [
+        BannerService,
+        PageService,
+    ],
+    compatibility: '^3.0.0',
+>>>>>>> 0c296a73ec657a345b2afc59e39fb95977eebabf
 })
 export class ContentPlugin {}

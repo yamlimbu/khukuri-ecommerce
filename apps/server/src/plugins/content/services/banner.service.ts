@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+<<<<<<< HEAD
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RequestContext } from '@vendure/core';
@@ -95,5 +96,69 @@ export class BannerService {
     async delete(ctx: RequestContext, id: string): Promise<boolean> {
         const result = await this.bannerRepository.delete(id);
         return result.affected ? result.affected > 0 : false;
+=======
+import {
+    ListQueryBuilder,
+    RequestContext,
+    TransactionalConnection,
+    AssetService,
+    ListQueryOptions,
+    PaginatedList,
+    patchEntity
+} from '@vendure/core';
+import { Banner } from '../entities/banner.entity';
+
+@Injectable()
+export class BannerService {
+    constructor(
+        private connection: TransactionalConnection,
+        private listQueryBuilder: ListQueryBuilder,
+        private assetService: AssetService,
+    ) {}
+
+    findAll(ctx: RequestContext, options?: ListQueryOptions<Banner>): Promise<PaginatedList<Banner>> {
+        return this.listQueryBuilder
+            .build(Banner, options, { ctx })
+            .getManyAndCount()
+            .then(([items, totalItems]) => ({
+                items,
+                totalItems,
+            }));
+    }
+
+    findAllShop(ctx: RequestContext): Promise<Banner[]> {
+        return this.connection.getRepository(ctx, Banner).find({
+            order: { order: 'ASC' }
+        });
+    }
+
+    findOne(ctx: RequestContext, id: string): Promise<Banner | null> {
+        return this.connection.getRepository(ctx, Banner).findOne({ where: { id } });
+    }
+
+    async create(ctx: RequestContext, input: any): Promise<Banner> {
+        const banner = new Banner(input);
+        if (input.imageId) {
+            banner.image = await this.assetService.findOne(ctx, input.imageId) as any;
+        }
+        return this.connection.getRepository(ctx, Banner).save(banner);
+    }
+
+    async update(ctx: RequestContext, input: any): Promise<Banner> {
+        const banner = await this.connection.getEntityOrThrow(ctx, Banner, input.id);
+        const updatedBanner = patchEntity(banner, input);
+        if (input.imageId) {
+            updatedBanner.image = await this.assetService.findOne(ctx, input.imageId) as any;
+        }
+        return this.connection.getRepository(ctx, Banner).save(updatedBanner);
+    }
+
+    async delete(ctx: RequestContext, id: string): Promise<any> {
+        const banner = await this.connection.getEntityOrThrow(ctx, Banner, id);
+        await this.connection.getRepository(ctx, Banner).remove(banner);
+        return {
+            result: 'DELETED',
+        };
+>>>>>>> 0c296a73ec657a345b2afc59e39fb95977eebabf
     }
 }
