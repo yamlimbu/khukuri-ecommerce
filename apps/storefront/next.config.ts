@@ -1,33 +1,39 @@
-import {NextConfig} from 'next';
+import { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-    cacheComponents: true,
-    images: {
-        // This is necessary to display images from your local Vendure instance
-        dangerouslyAllowLocalIP: true,
-        remotePatterns: [
-            {
-                hostname: 'readonlydemo.vendure.io',
-            },
-            {
-                hostname: 'demo.vendure.io'
-            },
-            {
-                hostname: 'localhost'
-            },
-            {
-                hostname: 'khukuri1-ecommerce.onrender.com',
-                protocol: 'https'
-            },
-            {
-                hostname: 'khukuri-ecommerce.onrender.com',
-                protocol: 'https'
-            }
-        ],
-    },
-    experimental: {
-        rootParams: true
-    }
+  cacheComponents: true,
+  images: {
+    dangerouslyAllowLocalIP: true,
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '3000',
+        pathname: '/assets/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
+        pathname: '/assets/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'readonlydemo.vendure.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'demo.vendure.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'himalayankhukuri.com',
+      },
+    ],
+  },
+  experimental: {
+    rootParams: true,
+  },
 };
 
 export default nextConfig;
