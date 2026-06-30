@@ -146,9 +146,9 @@ export const config: VendureConfig = {
                 __dirname,
                 '../static/assets'
             ),
-            // In production, make sure Vendure generates asset URLs that point to the Render backend.
-            // In dev, leave it undefined so Vendure can derive it correctly.
-            assetUrlPrefix: IS_DEV ? undefined : process.env.VENDURE_ASSET_URL_PREFIX,
+            // Use the configured public asset URL prefix in production (even when queried internally via localhost)
+            // or let Vendure derive it dynamically in development.
+            assetUrlPrefix: process.env.VENDURE_ASSET_URL_PREFIX || undefined,
         }),
 
         DefaultSchedulerPlugin.init(),
