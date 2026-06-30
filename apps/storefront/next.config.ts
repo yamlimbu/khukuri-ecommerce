@@ -3,6 +3,7 @@ import { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   cacheComponents: true,
   images: {
+    unoptimized: true,
     dangerouslyAllowLocalIP: true,
     remotePatterns: [
       {
@@ -13,8 +14,20 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '3002',
+        pathname: '/assets/**',
+      },
+      {
+        protocol: 'http',
         hostname: 'localhost',
         port: '3000',
+        pathname: '/assets/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3002',
         pathname: '/assets/**',
       },
       {
