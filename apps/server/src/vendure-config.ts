@@ -17,7 +17,6 @@ import { DashboardPlugin } from '@vendure/dashboard/plugin';
 import { GraphiqlPlugin } from '@vendure/graphiql-plugin';
 
 import 'dotenv/config';
-import fs from 'fs';
 import path from 'path';
 
 
@@ -57,11 +56,9 @@ const isLocal = process.env.APP_ENV === 'local';
 
 const frontendBaseUrl = isLocal
     ? 'http://localhost:3001'
-    : 'https://khukuri1-store.vercel.app';
+    : process.env.FRONTEND_URL!;
 
-const backendBaseUrl = isLocal
-    ? 'http://localhost:3000'
-    : 'https://khukuri-ecommerce.onrender.com';
+
 
 
 export const config: VendureConfig = {
@@ -75,9 +72,12 @@ export const config: VendureConfig = {
 
         cors: {
             origin: [
-                'http://localhost:3000', 'https://khukuri-ecommerce.onrender.com',
+                'http://localhost:3000',
                 'http://localhost:3001',
-                'https://khukuri1-store.vercel.app',
+                'http://127.0.0.1:3001',
+
+                process.env.FRONTEND_URL!,
+                process.env.BACKEND_URL!,
             ],
             credentials: true,
         },
@@ -149,7 +149,7 @@ export const config: VendureConfig = {
 
             // In production, make sure Vendure generates asset URLs that point to the Render backend.
             // In dev, leave it undefined so Vendure can derive it correctly.
-            assetUrlPrefix: IS_DEV ? undefined : 'https://khukuri-ecommerce.onrender.com/assets/',
+            assetUrlPrefix: IS_DEV ? undefined : process.env.VENDURE_ASSET_URL_PREFIX,
         }),
 
         DefaultSchedulerPlugin.init(),
