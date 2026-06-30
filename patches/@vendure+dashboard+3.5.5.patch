@@ -257,3 +257,14 @@ index 4d46c29..8ba62e7 100644
                          url: '/facets',
                          order: 300,
                          requiresPermission: ['ReadProduct', 'ReadCatalog'],
+diff --git a/node_modules/@vendure/dashboard/src/app/routes/_authenticated.tsx b/node_modules/@vendure/dashboard/src/app/routes/_authenticated.tsx
+--- a/node_modules/@vendure/dashboard/src/app/routes/_authenticated.tsx
++++ b/node_modules/@vendure/dashboard/src/app/routes/_authenticated.tsx
+@@ -3,7 +3,7 @@
+ import { useAuth } from '@/vdb/hooks/use-auth.js';
+ import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
+ 
+-export const Route = createFileRoute(AUTHENTICATED_ROUTE_PREFIX)({
++export const Route = createFileRoute('/_authenticated')({
+     beforeLoad: ({ context, location }) => {
+         if (!context.auth.isAuthenticated) {

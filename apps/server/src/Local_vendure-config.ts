@@ -37,7 +37,7 @@ if (!ContentPlugin) {
 
 const IS_DEV = process.env.APP_ENV === 'dev';
 const useDbSync = process.env.VENDURE_DB_SYNC === 'true' || IS_DEV;
-const serverPort = +process.env.PORT || 3000;
+const serverPort = Number(process.env.VENDURE_PORT) || 3000;
 
 export const config: VendureConfig = {
     apiOptions: {

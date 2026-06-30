@@ -47,7 +47,7 @@ if (typeof TRUST_PROXY_ENV === 'string') {
     trustProxy = process.env.NODE_ENV === 'production' ? 1 : 0;
 }
 
-const serverPort = Number(process.env.PORT) || 3000;
+const serverPort = Number(process.env.VENDURE_PORT) || 3000;
 
 // In this config file, we rely on the `dbConnectionOptions` branch:
 // - APP_ENV === 'local' uses DB_* variables
