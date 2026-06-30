@@ -73,16 +73,24 @@ export async function query<TResult, TVariables>(
     // Set the channel token header (use provided channelToken or default)
     headers[VENDURE_CHANNEL_TOKEN_HEADER] = channelToken || VENDURE_CHANNEL_TOKEN;
 
-    const response = await fetch(VENDURE_API_URL!, {
-        ...fetchOptions,
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-            query: print(document),
-            variables: variables || {},
-        }),
-        ...(tags && { next: { tags } }),
-    });
+    let response: Response;
+    try {
+        response = await fetch(VENDURE_API_URL!, {
+            ...fetchOptions,
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+                query: print(document),
+                variables: variables || {},
+            }),
+            ...(tags && { next: { tags } }),
+        });
+    } catch (error) {
+        console.warn(`[Vendure API Warning] Fetch failed for query: ${print(document).split('\n')[0].trim()}. Error:`, error);
+        return {
+            data: {} as TResult,
+        };
+    }
 
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
