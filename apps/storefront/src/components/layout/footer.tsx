@@ -1,4 +1,4 @@
-import { cacheLife } from 'next/cache';
+import { cacheLife, cacheTag } from 'next/cache';
 import { getTopCollections } from '@/lib/vendure/cached';
 import Link from "next/link";
 
@@ -18,6 +18,7 @@ async function Copyright() {
 export async function Footer() {
     'use cache';
     cacheLife('days');
+    cacheTag('collections');
 
     const collections = await getTopCollections();
     const shopName = process.env.NEXT_PUBLIC_SHOP_NAME ?? 'Khukuri House';

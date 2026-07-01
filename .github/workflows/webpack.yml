@@ -40,6 +40,10 @@ jobs:
             # Restart backend with cleanup
             npx pm2 delete vendure-backend || true
             npx pm2 start apps/server/dist/index.js --name vendure-backend --cwd apps/server
+
+            # Restart worker with cleanup
+            npx pm2 delete vendure-worker || true
+            npx pm2 start apps/server/dist/index-worker.js --name vendure-worker --cwd apps/server
             
             # Build storefront with local API
             cd apps/storefront

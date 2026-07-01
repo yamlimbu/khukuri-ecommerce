@@ -31,7 +31,7 @@ async function getCollectionProducts(slug: string, searchParams: { [key: string]
 async function getCollectionMetadata(slug: string) {
     'use cache';
     cacheLife('hours');
-    cacheTag(`collection-meta-${slug}`);
+    cacheTag(`collection-${slug}`);
 
     return query(GetCollectionProductsQuery, {
         slug,

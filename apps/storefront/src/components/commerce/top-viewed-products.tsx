@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { query } from "@/lib/vendure/api";
 import { SearchProductsQuery } from "@/lib/vendure/queries";
 import { ProductCard } from "./product-card";
@@ -10,6 +10,7 @@ import Link from "next/link";
 export async function TopViewedProducts() {
     'use cache';
     cacheLife('days');
+    cacheTag('featured-products', 'products');
 
     const result = await query(SearchProductsQuery, {
         input: { take: 10, groupByProduct: true }

@@ -1,4 +1,4 @@
-import {revalidateTag} from 'next/cache';
+import {revalidateTag, revalidatePath} from 'next/cache';
 import {NextRequest, NextResponse} from 'next/server';
 
 // Supported cache tags that can be revalidated
@@ -53,6 +53,11 @@ export async function POST(request: NextRequest) {
 
         // Validate and revalidate each tag
         const results: {tag: string; success: boolean; error?: string}[] = [];
+        const pathsToRevalidate = new Set<string>();
+
+        // Always revalidate the homepage and search page when catalog changes occur
+        pathsToRevalidate.add('/');
+        pathsToRevalidate.add('/search');
 
         for (const tag of tags) {
             if (typeof tag !== 'string') {
@@ -66,10 +71,33 @@ export async function POST(request: NextRequest) {
             }
 
             try {
-                revalidateTag(tag, {expire: 0});
+                // Correct signature for Next.js 16 revalidateTag
+                revalidateTag(tag, { expire: 0 });
                 results.push({tag, success: true});
-            } catch {
-                results.push({tag, success: false, error: 'Revalidation failed'});
+
+                // Deduce path from tag to invalidate page-level HTML caches
+                if (tag.startsWith('product-')) {
+                    const slug = tag.replace('product-', '');
+                    pathsToRevalidate.add(`/product/${slug}`);
+                } else if (tag.startsWith('collection-')) {
+                    const slug = tag.replace('collection-', '');
+                    pathsToRevalidate.add(`/collection/${slug}`);
+                } else if (tag.startsWith('related-products-')) {
+                    const slug = tag.replace('related-products-', '');
+                    pathsToRevalidate.add(`/collection/${slug}`);
+                }
+            } catch (err: any) {
+                results.push({tag, success: false, error: err?.message || 'Revalidation failed'});
+            }
+        }
+
+        // Revalidate all affected page paths
+        for (const path of pathsToRevalidate) {
+            try {
+                revalidatePath(path);
+                console.log(`[Revalidate API] Revalidated path: ${path}`);
+            } catch (err) {
+                console.error(`[Revalidate API] Failed to revalidate path ${path}:`, err);
             }
         }
 
@@ -79,6 +107,7 @@ export async function POST(request: NextRequest) {
             {
                 revalidated: allSuccessful,
                 results,
+                revalidatedPaths: Array.from(pathsToRevalidate),
                 timestamp: Date.now(),
             },
             {status: allSuccessful ? 200 : 207} // 207 = Multi-Status

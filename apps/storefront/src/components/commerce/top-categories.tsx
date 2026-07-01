@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { query } from "@/lib/vendure/api";
 import { GetTopCollectionsQuery } from "@/lib/vendure/queries";
 import { normalizeAssetUrl } from '@/lib/utils';
@@ -8,6 +8,7 @@ import Image from "next/image";
 async function getTopCategories() {
     'use cache'
     cacheLife('days')
+    cacheTag('collections')
 
     const result = await query(GetTopCollectionsQuery);
     return result.data.collections.items.slice(0, 5);

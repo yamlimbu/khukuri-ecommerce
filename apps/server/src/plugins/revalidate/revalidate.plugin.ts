@@ -120,30 +120,34 @@ export class RevalidatePlugin {
         }
 
         const url = `${frontendUrl.replace(/\/$/, '')}/api/revalidate`;
-        console.log(`[RevalidatePlugin] Sending revalidation request to: ${url} for tags:`, tags);
 
         // Deduplicate tags
         const uniqueTags = Array.from(new Set(tags));
 
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${secret}`,
-                },
-                body: JSON.stringify({ tags: uniqueTags }),
-            });
+        console.log(`[RevalidatePlugin] Scheduling revalidation request to: ${url} for tags:`, uniqueTags);
 
-            if (!response.ok) {
-                const text = await response.text();
-                console.error(`[RevalidatePlugin] Revalidation failed (status ${response.status}): ${text}`);
-            } else {
-                const resJson = await response.json();
-                console.log('[RevalidatePlugin] Revalidation response:', resJson);
+        // Wait 2 seconds for search indexing jobs to finish in the database/worker
+        setTimeout(async () => {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${secret}`,
+                    },
+                    body: JSON.stringify({ tags: uniqueTags }),
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    console.error(`[RevalidatePlugin] Revalidation failed (status ${response.status}): ${text}`);
+                } else {
+                    const resJson = await response.json();
+                    console.log('[RevalidatePlugin] Revalidation response:', resJson);
+                }
+            } catch (err) {
+                console.error('[RevalidatePlugin] Network error calling revalidation endpoint:', err);
             }
-        } catch (err) {
-            console.error('[RevalidatePlugin] Network error calling revalidation endpoint:', err);
-        }
+        }, 2000);
     }
 }
