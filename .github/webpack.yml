@@ -7,20 +7,20 @@ deploy_job:
     - eval $(ssh-agent -s)
     - echo "$DEV_PRIVATE_KEY" | tr -d '\r' | ssh-add -
   script:
-    - >
-      ssh $DEV_USER@$DEV_HOSTNAME "
-        cd htdocs/himalayankhukuri.com/khukuri-ecommerce &&
-        git pull origin main &&
-        npm install &&
-        cd apps/server &&
-        npm run build &&
-        cd ../.. &&
-        npx pm2 delete vendure-backend || true &&
-        npx pm2 start apps/server/dist/index.js --name vendure-backend --cwd apps/server &&
-        cd apps/storefront &&
-        VENDURE_SHOP_API_URL=http://127.0.0.1:3002/shop-api npm run build &&
-        cd ../.. &&
-        npx pm2 restart khukuri-storefront &&
-        npx pm2 save &&
+    - |
+      ssh $DEV_USER@$DEV_HOSTNAME bash -s << 'EOF'
+        cd htdocs/himalayankhukuri.com/khukuri-ecommerce
+        git pull origin main
+        npm install
+        cd apps/server
+        npm run build
+        cd ../..
+        npx pm2 delete vendure-backend || true
+        npx pm2 start apps/server/dist/index.js --name vendure-backend --cwd apps/server
+        cd apps/storefront
+        VENDURE_SHOP_API_URL=http://127.0.0.1:3002/shop-api npm run build
+        cd ../..
+        npx pm2 restart khukuri-storefront
+        npx pm2 save
         echo 'Deployment completed successfully!'
-      "
+      EOF
