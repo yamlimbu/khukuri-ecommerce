@@ -24,6 +24,7 @@ import path from 'path';
 
 import { CustomAdminUiPlugin } from './plugins/custom-ui/custom-ui.plugin';
 import { ContentPlugin } from './plugins/content/content.plugin';
+import { RevalidatePlugin } from './plugins/revalidate/revalidate.plugin';
 
 
 
@@ -220,6 +221,7 @@ export const config: VendureConfig = {
 
         CustomAdminUiPlugin,
         ContentPlugin,
+        RevalidatePlugin,
     ],
 };
 
