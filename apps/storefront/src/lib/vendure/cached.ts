@@ -29,13 +29,14 @@ export async function getAvailableCountriesCached() {
 
 /**
  * Get top-level collections with caching enabled.
- * Collections rarely change, so we cache them for 1 day.
+ * Collections data is invalidated via revalidation webhook on Product/Collection events.
  */
 export async function getTopCollections() {
     'use cache';
-    cacheLife('days');
+    cacheLife({ max: 60, stale: 86400 });
     cacheTag('collections');
 
     const result = await query(GetTopCollectionsQuery);
     return result.data?.collections?.items || [];
 }
+

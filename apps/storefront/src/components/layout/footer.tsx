@@ -1,5 +1,5 @@
-import { cacheLife } from 'next/cache';
-import { getTopCollections } from '@/lib/vendure/cached';
+import { cacheLife } from "next/cache";
+import { getTopCollections } from "@/lib/vendure/cached";
 import Link from "next/link";
 
 async function Copyright() {
@@ -7,10 +7,9 @@ async function Copyright() {
     cacheLife('days');
 
     const shopName = process.env.NEXT_PUBLIC_SHOP_NAME ?? 'Khukuri House';
-
     return (
         <div>
-            Â© {new Date().getFullYear()} {shopName}. All rights reserved.
+            © {new Date().getFullYear()} {shopName}. All rights reserved.
         </div>
     );
 }
@@ -18,10 +17,10 @@ async function Copyright() {
 export async function Footer() {
     'use cache';
     cacheLife('days');
-
+    
     const collections = await getTopCollections();
     const shopName = process.env.NEXT_PUBLIC_SHOP_NAME ?? 'Khukuri House';
-
+    
     return (
         <footer className="border-t border-border bg-card text-card-foreground mt-auto">
             <div className="container mx-auto px-4 py-12">
@@ -31,7 +30,7 @@ export async function Footer() {
                             {shopName}
                         </p>
                     </div>
-
+                    
                     <div>
                         <p className="text-sm font-semibold mb-4">Categories</p>
                         <ul className="space-y-2 text-sm text-muted-foreground">
@@ -47,7 +46,7 @@ export async function Footer() {
                             ))}
                         </ul>
                     </div>
-
+                    
                     <div>
                         <p className="text-sm font-semibold mb-4">Categories</p>
                         <ul className="space-y-2 text-sm text-muted-foreground">
@@ -64,7 +63,7 @@ export async function Footer() {
                         </ul>
                     </div>
                 </div>
-
+                
                 <div className="mt-12 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-zinc-500">
                     <Copyright />
                 </div>
