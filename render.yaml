@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: server
-    env: node
-    rootDirectory: apps/server
-    buildCommand: "NODE_OPTIONS=--max-old-space-size=1024 npm run build"
-    startCommand: "npm run start"
