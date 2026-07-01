@@ -1,0 +1,44 @@
+deploy_job:
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  image: dryicesolutions/alpine:1.0.0
+  before_script:
+    - eval $(ssh-agent -s)
+    - echo "$DEV_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+  script:
+    - ssh $DEV_USER@$DEV_HOSTNAME "
+        cd htdocs/himalayankhukuri.com/khukuri-ecommerce &&
+        git pull origin main &&
+        
+        # Install dependencies
+        npm install &&
+        
+        # Build backend
+        cd apps/server &&
+        npm run build &&
+        cd ../.. &&
+        
+        # Restart backend with cleanup
+        npx pm2 delete vendure-backend || true &&
+        npx pm2 start apps/server/dist/index.js --name vendure-backend --cwd apps/server &&
+        
+        # Build storefront with local API
+        cd apps/storefront &&
+        VENDURE_SHOP_API_URL=http://127.0.0.1:3002/shop-api npm run build &&
+        cd ../.. &&
+        
+        # Restart storefront
+        npx pm2 restart khukuri-storefront &&
+        
+        # Save PM2 state
+        npx pm2 save &&
+        
+        # Clear Redis cache if using (for instant updates)
+        # redis-cli FLUSHALL
+        
+        # Restart nginx if needed
+        # sudo systemctl restart nginx
+        
+        echo 'Deployment completed successfully!'
+      "
