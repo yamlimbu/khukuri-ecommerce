@@ -7,7 +7,8 @@ deploy_job:
     - eval $(ssh-agent -s)
     - echo "$DEV_PRIVATE_KEY" | tr -d '\r' | ssh-add -
   script:
-    - ssh $DEV_USER@$DEV_HOSTNAME "
+    - |
+      ssh $DEV_USER@$DEV_HOSTNAME "
         cd htdocs/himalayankhukuri.com/khukuri-ecommerce &&
         git pull origin main &&
         
@@ -33,12 +34,6 @@ deploy_job:
         
         # Save PM2 state
         npx pm2 save &&
-        
-        # Clear Redis cache if using (for instant updates)
-        # redis-cli FLUSHALL
-        
-        # Restart nginx if needed
-        # sudo systemctl restart nginx
         
         echo 'Deployment completed successfully!'
       "
