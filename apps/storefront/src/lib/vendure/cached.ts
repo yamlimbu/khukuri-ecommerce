@@ -32,10 +32,15 @@ export async function getAvailableCountriesCached() {
  * Filters client-side to any collection with ≥1 product variant, regardless
  * of whether it is top-level or nested. This means the admin just needs to
  * assign products to a collection for it to appear in the storefront nav.
+ *
+ * Cache TTL: 60s fallback. In production, revalidateTag('collections') fires
+ * instantly (~3s) when admin makes any collection change — no waiting needed.
  */
 export async function getTopCollections() {
     'use cache';
-    cacheLife('minutes');
+    // Custom 60-second TTL — fallback only when revalidation pipeline is down.
+    // When Vendure fires CollectionEvent → revalidateTag('collections') → instant.
+    cacheLife({ stale: 0, revalidate: 60, expire: 60 });
     cacheTag('collections');
 
     const result = await query(GetTopCollectionsQuery);
