@@ -7,7 +7,7 @@ import Image from "next/image";
 
 async function getTopCategories() {
     'use cache'
-    cacheLife('days')
+    cacheLife('hours')   // 'days' caused up to 24h stale data after slug renames
     cacheTag('collections')
 
     const result = await query(GetTopCollectionsQuery);

@@ -18,7 +18,9 @@ import {
 async function getCollectionProducts(slug: string, searchParams: { [key: string]: string | string[] | undefined }) {
     'use cache';
     cacheLife('hours');
-    cacheTag(`collection-${slug}`);
+    // 'collections' tag ensures a slug rename busts this page even if old slug
+    // is no longer in the CollectionEvent entity
+    cacheTag(`collection-${slug}`, 'collections');
 
     return query(SearchProductsQuery, {
         input: buildSearchInput({
@@ -31,7 +33,7 @@ async function getCollectionProducts(slug: string, searchParams: { [key: string]
 async function getCollectionMetadata(slug: string) {
     'use cache';
     cacheLife('hours');
-    cacheTag(`collection-${slug}`);
+    cacheTag(`collection-${slug}`, 'collections');
 
     return query(GetCollectionProductsQuery, {
         slug,

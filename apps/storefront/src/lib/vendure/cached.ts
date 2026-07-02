@@ -29,11 +29,12 @@ export async function getAvailableCountriesCached() {
 
 /**
  * Get top-level collections with caching enabled.
- * Collections rarely change, so we cache them for 1 day.
+ * 'hours' TTL so slug renames appear within 1 hour at most (vs 24h with 'days').
+ * revalidateTag('collections') still provides instant invalidation.
  */
 export async function getTopCollections() {
     'use cache';
-    cacheLife('days');
+    cacheLife('hours');
     cacheTag('collections');
 
     const result = await query(GetTopCollectionsQuery);
