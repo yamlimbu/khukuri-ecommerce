@@ -1,4 +1,3 @@
-import {cacheLife, cacheTag} from 'next/cache';
 import {getTopCollections} from '@/lib/vendure/cached';
 import {
     NavigationMenu,
@@ -7,11 +6,9 @@ import {
 } from '@/components/ui/navigation-menu';
 import {NavbarLink} from '@/components/layout/navbar/navbar-link';
 
+// getTopCollections() already has 'use cache' + cacheTag('collections'),
+// so no redundant outer cache is needed here.
 export async function NavbarCollections() {
-    "use cache";
-    cacheLife('days');
-    cacheTag('collections');
-
     const collections = await getTopCollections();
 
     return (

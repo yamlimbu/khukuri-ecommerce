@@ -5,6 +5,7 @@ import {ProductGrid} from "@/components/commerce/product-grid";
 import {buildSearchInput, getCurrentPage} from "@/lib/search-helpers";
 import {query} from "@/lib/vendure/api";
 import {SearchProductsQuery} from "@/lib/vendure/queries";
+import {cacheLife, cacheTag} from "next/cache";
 
 interface SearchResultsProps {
     searchParams: Promise<{
@@ -12,13 +13,21 @@ interface SearchResultsProps {
     }>
 }
 
+async function getSearchProducts(searchParams: { [key: string]: string | string[] | undefined }) {
+    'use cache';
+    cacheLife('minutes'); // short TTL — search results should be near-live
+    cacheTag('products', 'featured-products');
+
+    return query(SearchProductsQuery, {
+        input: buildSearchInput({ searchParams })
+    });
+}
+
 export async function SearchResults({searchParams}: SearchResultsProps) {
     const searchParamsResolved = await searchParams;
     const page = getCurrentPage(searchParamsResolved);
 
-    const productDataPromise = query(SearchProductsQuery, {
-        input: buildSearchInput({searchParams: searchParamsResolved})
-    });
+    const productDataPromise = getSearchProducts(searchParamsResolved);
 
 
     return (
