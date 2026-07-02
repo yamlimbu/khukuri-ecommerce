@@ -17,44 +17,82 @@ jobs:
           DEV_PRIVATE_KEY: ${{ secrets.DEV_PRIVATE_KEY }}
           DEV_USER: ${{ secrets.DEV_USER }}
           DEV_HOSTNAME: ${{ secrets.DEV_HOSTNAME }}
+          REVALIDATION_SECRET: ${{ secrets.REVALIDATION_SECRET }}
         run: |
-          # Start ssh-agent
           eval $(ssh-agent -s)
-          
-          # Add private key from GitHub secrets
           echo "$DEV_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-          
-          # Run deployment commands on the remote server
-          ssh -o StrictHostKeyChecking=no $DEV_USER@$DEV_HOSTNAME bash -s << 'EOF'
-            cd htdocs/himalayankhukuri.com/khukuri-ecommerce
-            git pull origin main
-            
-            # Install dependencies
-            npm install
-            
-            # Build backend
-            cd apps/server
-            npm run build
-            cd ../..
-            
-            # Restart backend with cleanup
-            npx pm2 delete vendure-backend || true
-            npx pm2 start apps/server/dist/index.js --name vendure-backend --cwd apps/server
 
-            # Restart worker with cleanup
-            npx pm2 delete vendure-worker || true
-            npx pm2 start apps/server/dist/index-worker.js --name vendure-worker --cwd apps/server
-            
-            # Build storefront with local API
-            cd apps/storefront
-            VENDURE_SHOP_API_URL=http://127.0.0.1:3002/shop-api npm run build
-            cd ../..
-            
-            # Restart storefront
-            npx pm2 restart khukuri-storefront
-            
-            # Save PM2 state
+          # Pass REVALIDATION_SECRET into the heredoc explicitly
+          ssh -o StrictHostKeyChecking=no $DEV_USER@$DEV_HOSTNAME \
+            REVALIDATION_SECRET="$REVALIDATION_SECRET" \
+            bash -s << 'ENDSSH'
+            set -e   # abort on any error
+            APP_DIR="htdocs/himalayankhukuri.com/khukuri-ecommerce"
+            cd "$APP_DIR"
+
+            echo "==> Pulling latest code..."
+            git pull origin main
+
+            echo "==> Installing dependencies..."
+            npm install
+
+            # ── BACKEND ──────────────────────────────────────────────────────
+            echo "==> Building Vendure server..."
+            npm run build -w server
+
+            echo "==> Restarting Vendure backend..."
+            npx pm2 delete vendure-backend 2>/dev/null || true
+            npx pm2 start apps/server/dist/index.js \
+              --name vendure-backend \
+              --cwd apps/server
+
+            echo "==> Restarting Vendure worker..."
+            npx pm2 delete vendure-worker 2>/dev/null || true
+            npx pm2 start apps/server/dist/index-worker.js \
+              --name vendure-worker \
+              --cwd apps/server
+
+            # Give the backend 8s to bind to port 3002 before the build hits it
+            echo "==> Waiting for backend to be ready..."
+            sleep 8
+
+            # ── STOREFRONT ───────────────────────────────────────────────────
+            echo "==> Building Next.js storefront..."
+            # Server-side API URL uses loopback so build fetches bypass Nginx/SSL
+            VENDURE_SHOP_API_URL=http://127.0.0.1:3002/shop-api \
+              npm run build -w storefront
+
+            echo "==> Restarting storefront in PM2..."
+            npx pm2 delete khukuri-storefront 2>/dev/null || true
+            # All runtime env vars are set as shell env before PM2 inherits them
+            PORT=3001 \
+            VENDURE_SHOP_API_URL=http://127.0.0.1:3002/shop-api \
+            NEXT_PUBLIC_VENDURE_SHOP_API_URL=https://himalayankhukuri.com/shop-api \
+            REVALIDATION_ENDPOINT=http://127.0.0.1:3001 \
+            REVALIDATION_SECRET="$REVALIDATION_SECRET" \
+              npx pm2 start "npm run start -w storefront" \
+                --name khukuri-storefront
+
+            # ── SAVE PM2 STATE ───────────────────────────────────────────────
+            echo "==> Saving PM2 process list..."
             npx pm2 save
-            
-            echo 'Deployment completed successfully!'
-          EOF
+
+            # ── BUST ALL CACHES ───────────────────────────────────────────────
+            # Wait for Next.js to fully bind before calling revalidate
+            echo "==> Waiting for storefront to be ready..."
+            sleep 15
+
+            echo "==> Busting all stale caches..."
+            curl -s -X POST http://127.0.0.1:3001/api/revalidate \
+              -H "Authorization: Bearer $REVALIDATION_SECRET" \
+              -H "Content-Type: application/json" \
+              -d '{"tags":["featured-products","collections","banners","products"]}' \
+              && echo " Cache bust OK" \
+              || echo " Cache bust failed (storefront may still be starting)"
+
+            echo ""
+            echo "✅ Deployment completed!"
+            echo "   Backend   : port 3002 (Vendure)"
+            echo "   Storefront: port 3001 (Next.js)"
+            echo "   Public    : https://himalayankhukuri.com"
+          ENDSSH
