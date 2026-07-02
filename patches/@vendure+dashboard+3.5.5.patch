@@ -1,4 +1,4 @@
-diff --git a/node_modules/@vendure/dashboard/index.html b/node_modules/@vendure/dashboard/index.html
+﻿diff --git a/node_modules/@vendure/dashboard/index.html b/node_modules/@vendure/dashboard/index.html
 index 46107c4..212372d 100644
 --- a/node_modules/@vendure/dashboard/index.html
 +++ b/node_modules/@vendure/dashboard/index.html
@@ -36,7 +36,7 @@ index 2a1354f..02abd62 100644
 -        const breadcrumb = (lastMatch?.loaderData as any)?.breadcrumb;
 -
 -        const breadcrumbTitle = normalizeBreadcrumb(breadcrumb);
--        setPageTitle([breadcrumbTitle, DEFAULT_TITLE].filter(x => !!x).join(' • '));
+-        setPageTitle([breadcrumbTitle, DEFAULT_TITLE].filter(x => !!x).join(' â€¢ '));
 -    }, [matches]);
 -
 -    return pageTitle;
@@ -235,7 +235,7 @@ index 4d46c29..8ba62e7 100644
              {
                  id: 'insights',
 -                title: /* i18n*/ 'Insights',
-+                title: /* i18n*/ 'Dashboard',
++                title: 'Dashboard',
                  placement: 'top',
                  icon: ChartLine,
                  url: '/',
@@ -244,7 +244,7 @@ index 4d46c29..8ba62e7 100644
              {
                  id: 'catalog',
 -                title: /* i18n*/ 'Catalog',
-+                title: /* i18n*/ 'Product',
++                title: 'Product',
                  icon: Tags,
                  placement: 'top',
                  order: 200,
@@ -253,7 +253,7 @@ index 4d46c29..8ba62e7 100644
                      {
                          id: 'facets',
 -                        title: /* i18n*/ 'Facets',
-+                        title: /* i18n*/ 'Category',
++                        title: 'Category',
                          url: '/facets',
                          order: 300,
                          requiresPermission: ['ReadProduct', 'ReadCatalog'],

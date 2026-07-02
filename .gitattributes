@@ -1,0 +1,13 @@
+# Force LF line endings for patch files so patch-package can parse them on Linux.
+# Without this, Windows Git converts them to CRLF which causes:
+# "Failed to apply patch: could not be parsed"
+patches/*.patch text eol=lf
+
+# Source code — let Git decide per platform
+*.ts   text=auto
+*.tsx  text=auto
+*.js   text=auto
+*.json text=auto
+*.yml  text=auto
+*.yaml text=auto
+*.md   text=auto
