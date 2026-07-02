@@ -73,8 +73,8 @@ export async function POST(request: NextRequest) {
             }
 
             try {
-                // Correct signature for Next.js 16 revalidateTag
-                revalidateTag(tag);
+                // Next.js 16.1.7: revalidateTag requires 2nd arg { expire: 0 } = expire immediately
+                revalidateTag(tag, { expire: 0 });
                 results.push({tag, success: true});
 
                 // Deduce path from tag to invalidate page-level HTML caches
