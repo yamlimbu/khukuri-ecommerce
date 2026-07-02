@@ -62,13 +62,13 @@ jobs:
 
             echo "==> Restarting Vendure backend..."
             npx pm2 delete vendure-backend 2>/dev/null || true
-            npx pm2 start apps/server/dist/index.js \
+            npx pm2 start dist/index.js \
               --name vendure-backend \
               --cwd apps/server
 
             echo "==> Restarting Vendure worker..."
             npx pm2 delete vendure-worker 2>/dev/null || true
-            npx pm2 start apps/server/dist/index-worker.js \
+            npx pm2 start dist/index-worker.js \
               --name vendure-worker \
               --cwd apps/server
 
