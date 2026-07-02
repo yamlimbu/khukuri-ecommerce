@@ -6,6 +6,8 @@ const VALID_TAGS = [
     'collections',
     'countries',
     'featured-products',
+    'products',
+    'banners',
 ] as const;
 
 // Dynamic tags follow patterns like 'product-{slug}', 'collection-{slug}', 'related-products-{slug}'
@@ -85,6 +87,9 @@ export async function POST(request: NextRequest) {
                 } else if (tag.startsWith('related-products-')) {
                     const slug = tag.replace('related-products-', '');
                     pathsToRevalidate.add(`/collection/${slug}`);
+                } else if (tag === 'banners') {
+                    // Banner changes always affect the homepage hero
+                    pathsToRevalidate.add('/');
                 }
             } catch (err: any) {
                 results.push({tag, success: false, error: err?.message || 'Revalidation failed'});

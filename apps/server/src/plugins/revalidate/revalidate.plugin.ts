@@ -111,23 +111,34 @@ export class RevalidatePlugin {
     }
 
     private async triggerRevalidate(tags: string[]) {
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
         const secret = process.env.REVALIDATION_SECRET;
-        
+
         if (!secret) {
-            console.warn('[RevalidatePlugin] REVALIDATION_SECRET environment variable is not set. Skipping cache revalidation.');
+            console.warn('[RevalidatePlugin] REVALIDATION_SECRET is not set. Skipping cache revalidation.');
             return;
         }
 
-        const url = `${frontendUrl.replace(/\/$/, '')}/api/revalidate`;
+        // Prefer a direct loopback endpoint to avoid going through Nginx/SSL on the same machine.
+        // Set REVALIDATION_ENDPOINT=http://127.0.0.1:3001 in server .env for same-server deployments.
+        // Falls back to FRONTEND_URL, then localhost:3001.
+        const endpoint = (
+            process.env.REVALIDATION_ENDPOINT ||
+            process.env.FRONTEND_URL ||
+            'http://localhost:3001'
+        ).replace(/\/$/, '');
+
+        const url = `${endpoint}/api/revalidate`;
 
         // Deduplicate tags
         const uniqueTags = Array.from(new Set(tags));
 
-        console.log(`[RevalidatePlugin] Scheduling revalidation request to: ${url} for tags:`, uniqueTags);
+        console.log(`[RevalidatePlugin] Scheduling revalidation to: ${url} for tags:`, uniqueTags);
 
-        // Wait 2 seconds for search indexing jobs to finish in the database/worker
+        // Wait 2 seconds for search indexing jobs to finish before notifying Next.js
         setTimeout(async () => {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 10_000); // 10s hard timeout
+
             try {
                 const response = await fetch(url, {
                     method: 'POST',
@@ -136,7 +147,10 @@ export class RevalidatePlugin {
                         'Authorization': `Bearer ${secret}`,
                     },
                     body: JSON.stringify({ tags: uniqueTags }),
+                    signal: controller.signal,
                 });
+
+                clearTimeout(timer);
 
                 if (!response.ok) {
                     const text = await response.text();
@@ -145,8 +159,13 @@ export class RevalidatePlugin {
                     const resJson = await response.json();
                     console.log('[RevalidatePlugin] Revalidation response:', resJson);
                 }
-            } catch (err) {
-                console.error('[RevalidatePlugin] Network error calling revalidation endpoint:', err);
+            } catch (err: any) {
+                clearTimeout(timer);
+                if (err?.name === 'AbortError') {
+                    console.error('[RevalidatePlugin] Revalidation timed out after 10s.');
+                } else {
+                    console.error('[RevalidatePlugin] Network error calling revalidation endpoint:', err);
+                }
             }
         }, 2000);
     }

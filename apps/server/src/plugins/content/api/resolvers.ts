@@ -3,6 +3,51 @@ import { Allow, Ctx, Permission, RequestContext, Transaction } from '@vendure/co
 import { BannerService } from '../services/banner.service';
 import { PageService } from '../services/page.service';
 
+/**
+ * Notify the Next.js storefront to invalidate the 'banners' cache tag.
+ * Called after any banner create / update / delete mutation.
+ *
+ * Uses REVALIDATION_ENDPOINT (loopback) when available to avoid going
+ * through Nginx/SSL on same-server deployments.
+ */
+async function triggerBannerRevalidation(): Promise<void> {
+    const secret = process.env.REVALIDATION_SECRET;
+
+    if (!secret) {
+        console.warn('[ContentPlugin] REVALIDATION_SECRET not set — skipping banner cache revalidation.');
+        return;
+    }
+
+    const endpoint = (
+        process.env.REVALIDATION_ENDPOINT ||
+        process.env.FRONTEND_URL ||
+        'http://localhost:3001'
+    ).replace(/\/$/, '');
+
+    const url = `${endpoint}/api/revalidate`;
+
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${secret}`,
+            },
+            body: JSON.stringify({ tags: ['banners'] }),
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            console.error(`[ContentPlugin] Banner revalidation failed (${response.status}): ${text}`);
+        } else {
+            console.log('[ContentPlugin] Banner cache revalidated successfully.');
+        }
+    } catch (err) {
+        console.error('[ContentPlugin] Network error calling banner revalidation endpoint:', err);
+    }
+}
+
 @Resolver()
 export class ContentAdminResolver {
     constructor(
@@ -26,21 +71,28 @@ export class ContentAdminResolver {
     @Mutation()
     @Allow(Permission.UpdateSettings)
     async createBanner(@Ctx() ctx: RequestContext, @Args() args: any) {
-        return this.bannerService.create(ctx, args.input);
+        const result = await this.bannerService.create(ctx, args.input);
+        // Fire-and-forget: bust the storefront banner cache
+        triggerBannerRevalidation().catch(() => {});
+        return result;
     }
 
     @Transaction()
     @Mutation()
     @Allow(Permission.UpdateSettings)
     async updateBanner(@Ctx() ctx: RequestContext, @Args() args: any) {
-        return this.bannerService.update(ctx, args.input);
+        const result = await this.bannerService.update(ctx, args.input);
+        triggerBannerRevalidation().catch(() => {});
+        return result;
     }
 
     @Transaction()
     @Mutation()
     @Allow(Permission.UpdateSettings)
     async deleteBanner(@Ctx() ctx: RequestContext, @Args() args: any) {
-        return this.bannerService.delete(ctx, args.id);
+        const result = await this.bannerService.delete(ctx, args.id);
+        triggerBannerRevalidation().catch(() => {});
+        return result;
     }
 
     @Query()

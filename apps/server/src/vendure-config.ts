@@ -49,16 +49,22 @@ if (typeof TRUST_PROXY_ENV === 'string') {
 
 const serverPort = Number(process.env.VENDURE_PORT) || 3000;
 
-// In this config file, we rely on the `dbConnectionOptions` branch:
-// - APP_ENV === 'local' uses DB_* variables
-// - otherwise uses DATABASE_URL
+// APP_ENV drives environment branching throughout this file:
+//   APP_ENV=local     → uses DB_* env vars, localhost URLs, devMode email
+//   APP_ENV=production → uses DATABASE_URL, FRONTEND_URL / BACKEND_URL, real email
 
 const isLocal = process.env.APP_ENV === 'local';
 
+// Single source of truth for environment-specific URLs.
+// Local:      frontend = http://localhost:3001, backend = http://localhost:3000
+// Production: both read from env vars (e.g. https://himalayankhukuri.com)
 const frontendBaseUrl = isLocal
     ? 'http://localhost:3001'
     : process.env.FRONTEND_URL!;
 
+const backendBaseUrl = isLocal
+    ? 'http://localhost:3000'
+    : process.env.BACKEND_URL!;
 
 
 
@@ -73,13 +79,15 @@ export const config: VendureConfig = {
 
         cors: {
             origin: [
+                // Local dev origins
                 'http://localhost:3000',
                 'http://localhost:3001',
                 'http://127.0.0.1:3001',
 
-                process.env.FRONTEND_URL!,
-                process.env.BACKEND_URL!,
-            ],
+                // Dynamic origins from resolved base URLs
+                frontendBaseUrl,
+                backendBaseUrl,
+            ].filter(Boolean),
             credentials: true,
         },
 
@@ -165,51 +173,48 @@ export const config: VendureConfig = {
         }),
 
 
-        EmailPlugin.init({
-            devMode: true,
-
-            outputPath: path.join(
-                __dirname,
-                '../static/email/test-emails'
-            ),
-
-            route: 'mailbox',
-
-            handlers: defaultEmailHandlers,
-
-            templateLoader: new FileBasedTemplateLoader(
-                path.join(
-                    __dirname,
-                    '../static/email/templates'
-                )
-            ),
-
-
-            ...(isLocal
-                ? {
-                    globalTemplateVars: {
-                        // The following variables will change depending on your storefront implementation.
-                        // Here we are assuming a storefront running at http://localhost:3001.
-                        fromAddress: '"example" <noreply@example.com>',
-                        verifyEmailAddressUrl: `${frontendBaseUrl}/verify`,
-                        passwordResetUrl: `${frontendBaseUrl}/password-reset`,
-                        changeEmailAddressUrl: `${frontendBaseUrl}/verify-email-address-change`,
-                    },
-                }
-                : {
-                    // Remote env uses DATABASE_URL
-                    globalTemplateVars: {
-                        fromAddress: '"Khukuri Store" <noreply@khukuri.com>',
-                        verifyEmailAddressUrl: `${frontendBaseUrl}/verify`,
-                        passwordResetUrl: `${frontendBaseUrl}/password-reset`,
-                        changeEmailAddressUrl: `${frontendBaseUrl}/verify-email-address-change`,
-                    },
-                }),
-
-
-
-
-        }),
+        ...(isLocal
+            // LOCAL: devMode writes emails to disk, never sends
+            ? [EmailPlugin.init({
+                devMode: true,
+                outputPath: path.join(__dirname, '../static/email/test-emails'),
+                route: 'mailbox',
+                handlers: defaultEmailHandlers,
+                templateLoader: new FileBasedTemplateLoader(
+                    path.join(__dirname, '../static/email/templates')
+                ),
+                globalTemplateVars: {
+                    fromAddress: '"example" <noreply@example.com>',
+                    verifyEmailAddressUrl: `${frontendBaseUrl}/verify`,
+                    passwordResetUrl: `${frontendBaseUrl}/password-reset`,
+                    changeEmailAddressUrl: `${frontendBaseUrl}/verify-email-address-change`,
+                },
+            })]
+            // PRODUCTION: devMode: false — real emails delivered via SMTP transport
+            // Configure SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS in server .env to enable.
+            : [EmailPlugin.init({
+                transport: process.env.SMTP_HOST
+                    ? {
+                        type: 'smtp',
+                        host: process.env.SMTP_HOST,
+                        port: Number(process.env.SMTP_PORT) || 587,
+                        auth: {
+                            user: process.env.SMTP_USER!,
+                            pass: process.env.SMTP_PASS!,
+                        },
+                    }
+                    : { type: 'none' as const }, // no-op until SMTP vars are set
+                handlers: defaultEmailHandlers,
+                templateLoader: new FileBasedTemplateLoader(
+                    path.join(__dirname, '../static/email/templates')
+                ),
+                globalTemplateVars: {
+                    fromAddress: '"Khukuri Store" <noreply@khukuri.com>',
+                    verifyEmailAddressUrl: `${frontendBaseUrl}/verify`,
+                    passwordResetUrl: `${frontendBaseUrl}/password-reset`,
+                    changeEmailAddressUrl: `${frontendBaseUrl}/verify-email-address-change`,
+                },
+            })]),
 
         DashboardPlugin.init({
             route: 'dashboard',

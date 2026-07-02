@@ -1,4 +1,5 @@
 import type {Metadata} from "next";
+import {cacheLife, cacheTag} from "next/cache";
 import {HeroBanner, HeroCarousel} from "@/components/layout/hero-carousel";
 import {HeroSection} from "@/components/layout/hero-section";
 import {TopCategories} from "@/components/commerce/top-categories";
@@ -8,6 +9,28 @@ import {SITE_NAME, SITE_URL, buildCanonicalUrl} from "@/lib/metadata";
 import { query } from "@/lib/vendure/api";
 import { GetBannersQuery } from "@/lib/vendure/queries";
 import { normalizeAssetUrl } from "@/lib/utils";
+
+/**
+ * Fetch banners with explicit cache tagging so `revalidateTag('banners')`
+ * immediately busts this data on both Vercel's Data Cache and the full-route cache.
+ */
+async function getBannersCached(): Promise<HeroBanner[]> {
+    'use cache';
+    cacheLife('days');
+    cacheTag('banners');
+
+    const result = await query(GetBannersQuery).catch(() => null);
+    return (result?.data?.banners as any[] ?? []).map((b: any) => ({
+        id: b.id,
+        title: b.title,
+        subtitle: b.subtitle || undefined,
+        primaryButtonLabel: b.primaryButtonLabel || undefined,
+        primaryButtonLink: b.primaryButtonLink || '/',
+        secondaryButtonLabel: b.secondaryButtonLabel || undefined,
+        secondaryButtonLink: b.secondaryButtonLink || '/',
+        image: b.image ? normalizeAssetUrl(b.image.preview, b.image.updatedAt) : undefined,
+    }));
+}
 
 export const metadata: Metadata = {
     title: {
@@ -28,18 +51,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home(_props: PageProps<'/'>) {
-    const bannersResult = await query(GetBannersQuery).catch(() => null);
-    // Map backend banners to HeroBanner type
-    const banners: HeroBanner[] = (bannersResult?.data?.banners as any[] ?? []).map((b: any) => ({
-    id: b.id,
-    title: b.title,
-    subtitle: b.subtitle || undefined,
-    primaryButtonLabel: b.primaryButtonLabel || undefined,
-    primaryButtonLink: b.primaryButtonLink || '/',
-    secondaryButtonLabel: b.secondaryButtonLabel || undefined,
-    secondaryButtonLink: b.secondaryButtonLink || '/',
-    image: b.image ? normalizeAssetUrl(b.image.preview, b.image.updatedAt) : undefined,
-}));
+    const banners = await getBannersCached();
 
     return (
         <div className="min-h-screen">
