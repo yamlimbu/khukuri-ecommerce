@@ -1,7 +1,12 @@
 import { vendureDashboardPlugin } from '@vendure/dashboard/vite';
-import { join, resolve } from 'path';
-import { pathToFileURL } from 'url';
+import { join, resolve, dirname } from 'path';
+import { pathToFileURL, fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
+
+// Vite loads .mts configs as ESM where __dirname is not available.
+// This standard polyfill restores it so path.join(__dirname, ...) works.
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default defineConfig({
     base: '/dashboard/',

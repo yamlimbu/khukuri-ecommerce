@@ -28,20 +28,23 @@ jobs:
             bash -l -s << 'ENDSSH'
             set -e   # abort on any error
 
-            # ── Load Node 20+ ─────────────────────────────────────────────────
-            # Source nvm (handles both .bashrc and .bash_profile configs)
+            # ── Bootstrap nvm + Node 20 LTS ───────────────────────────────────
             export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
 
-            # Install Node 20 LTS if not present, then switch to it
+            # Install nvm if not present (first-time server setup)
+            if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+              echo "==> nvm not found — installing nvm v0.40.3..."
+              curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+            fi
+
+            source "$NVM_DIR/nvm.sh"
+
+            # Install and activate Node 20 LTS
             nvm install 20
             nvm use 20
             nvm alias default 20
 
             echo "==> Node: $(node -v)  npm: $(npm -v)"
-
-            # Fallback: add common system paths
-            export PATH="/usr/local/bin:/usr/bin:$PATH"
 
             APP_DIR="htdocs/himalayankhukuri.com/khukuri-ecommerce"
             cd "$APP_DIR"
@@ -49,7 +52,7 @@ jobs:
             echo "==> Pulling latest code..."
             git pull origin main
 
-            echo "==> Installing dependencies..."
+            echo "==> Installing dependencies (Node $(node -v))..."
             npm install
 
             # ── BACKEND ──────────────────────────────────────────────────────
