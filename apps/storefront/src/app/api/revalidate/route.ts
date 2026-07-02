@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
 
             try {
                 // Correct signature for Next.js 16 revalidateTag
-                revalidateTag(tag, { expire: 0 });
+                revalidateTag(tag);
                 results.push({tag, success: true});
 
                 // Deduce path from tag to invalidate page-level HTML caches
