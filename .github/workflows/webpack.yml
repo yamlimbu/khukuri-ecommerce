@@ -22,11 +22,19 @@ jobs:
           eval $(ssh-agent -s)
           echo "$DEV_PRIVATE_KEY" | tr -d '\r' | ssh-add -
 
-          # Pass REVALIDATION_SECRET into the heredoc explicitly
+          # -l = login shell so .bash_profile / .profile is sourced (loads nvm/node/npm)
           ssh -o StrictHostKeyChecking=no $DEV_USER@$DEV_HOSTNAME \
             REVALIDATION_SECRET="$REVALIDATION_SECRET" \
-            bash -s << 'ENDSSH'
+            bash -l -s << 'ENDSSH'
             set -e   # abort on any error
+
+            # ── Load node/npm ──────────────────────────────────────────────────
+            # Source nvm if installed (covers servers where nvm is in .bashrc)
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
+            # Fallback: add common system paths in case nvm is not used
+            export PATH="/usr/local/bin:/usr/bin:$PATH"
+
             APP_DIR="htdocs/himalayankhukuri.com/khukuri-ecommerce"
             cd "$APP_DIR"
 
