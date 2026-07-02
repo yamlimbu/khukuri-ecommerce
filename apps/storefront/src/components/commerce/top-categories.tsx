@@ -1,21 +1,12 @@
-import { cacheLife, cacheTag } from "next/cache";
-import { query } from "@/lib/vendure/api";
-import { GetTopCollectionsQuery } from "@/lib/vendure/queries";
+import { getTopCollections } from "@/lib/vendure/cached";
 import { normalizeAssetUrl } from '@/lib/utils';
 import Link from "next/link";
 import Image from "next/image";
 
-async function getTopCategories() {
-    'use cache'
-    cacheLife('hours')   // 'days' caused up to 24h stale data after slug renames
-    cacheTag('collections')
-
-    const result = await query(GetTopCollectionsQuery);
-    return result.data.collections.items.slice(0, 5);
-}
-
 export async function TopCategories() {
-    const categories = await getTopCategories();
+    // Uses shared getTopCollections() — same cached data as navbar & footer.
+    // Shows any collection that has at least 1 product, no hierarchy requirement.
+    const categories = await getTopCollections();
 
     if (!categories || categories.length === 0) {
         return null;

@@ -28,9 +28,10 @@ export async function getAvailableCountriesCached() {
 }
 
 /**
- * Get top-level collections with caching enabled.
- * 'minutes' TTL so stale empty results expire quickly in dev/after query changes.
- * revalidateTag('collections') still provides instant invalidation in production.
+ * Get collections that have products — used by navbar, footer, and homepage.
+ * Filters client-side to any collection with ≥1 product variant, regardless
+ * of whether it is top-level or nested. This means the admin just needs to
+ * assign products to a collection for it to appear in the storefront nav.
  */
 export async function getTopCollections() {
     'use cache';
@@ -38,5 +39,11 @@ export async function getTopCollections() {
     cacheTag('collections');
 
     const result = await query(GetTopCollectionsQuery);
-    return result.data?.collections?.items || [];
+    const allItems = result.data?.collections?.items || [];
+
+    // Show any collection that has at least one product, excluding root
+    return allItems
+        .filter(c => c.slug !== '__root_collection__' && (c.productVariants?.totalItems ?? 0) > 0)
+        .slice(0, 8);
 }
+

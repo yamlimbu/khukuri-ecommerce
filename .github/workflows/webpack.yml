@@ -52,6 +52,9 @@ jobs:
             echo "==> Pulling latest code..."
             git pull origin main
 
+            echo "==> Normalizing patch file line endings (CRLF→LF for patch-package)..."
+            find patches -name "*.patch" -exec sed -i 's/\r//' {} \;
+
             echo "==> Installing dependencies (Node $(node -v))..."
             npm install
 

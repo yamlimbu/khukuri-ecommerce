@@ -3,11 +3,14 @@ import { ActiveCustomerFragment, ProductCardFragment } from './fragments';
 
 export const GetTopCollectionsQuery = graphql(`
     query GetTopCollections {
-        collections(options: { topLevelOnly: true }) {
+        collections(options: { take: 20 }) {
             items {
                 id
                 name
                 slug
+                productVariants {
+                    totalItems
+                }
                 featuredAsset {
                     id
                     preview
