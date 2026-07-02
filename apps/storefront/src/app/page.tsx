@@ -12,11 +12,11 @@ import { normalizeAssetUrl } from "@/lib/utils";
 
 /**
  * Fetch banners with explicit cache tagging so `revalidateTag('banners')`
- * immediately busts this data on both Vercel's Data Cache and the full-route cache.
+ * immediately busts this data when a banner is created, updated or deleted.
  */
 async function getBannersCached(): Promise<HeroBanner[]> {
     'use cache';
-    cacheLife('days');
+    cacheLife('hours');  // 'days' → 'hours': banner changes appear within 1h max
     cacheTag('banners');
 
     const result = await query(GetBannersQuery).catch(() => null);

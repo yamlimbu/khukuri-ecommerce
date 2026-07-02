@@ -4,7 +4,7 @@ import Link from "next/link";
 
 async function Copyright() {
     'use cache';
-    cacheLife('days');
+    cacheLife('max');   // static env var text — never changes
 
     const shopName = process.env.NEXT_PUBLIC_SHOP_NAME ?? 'Khukuri House';
 
@@ -17,7 +17,7 @@ async function Copyright() {
 
 export async function Footer() {
     'use cache';
-    cacheLife('days');
+    cacheLife('hours');  // 'days' → 'hours': collection slug renames appear within 1h
     cacheTag('collections');
 
     const collections = await getTopCollections();
@@ -31,22 +31,6 @@ export async function Footer() {
                         <p className="text-sm font-semibold mb-4 uppercase tracking-wider">
                             {shopName}
                         </p>
-                    </div>
-
-                    <div>
-                        <p className="text-sm font-semibold mb-4">Categories</p>
-                        <ul className="space-y-2 text-sm text-muted-foreground">
-                            {collections.map((collection) => (
-                                <li key={collection.id}>
-                                    <Link
-                                        href={`/collection/${collection.slug}`}
-                                        className="hover:text-emerald-500 transition-colors"
-                                    >
-                                        {collection.name}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
                     </div>
 
                     <div>

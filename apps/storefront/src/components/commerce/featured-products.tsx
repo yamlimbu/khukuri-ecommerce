@@ -5,11 +5,11 @@ import {GetCollectionProductsQuery} from "@/lib/vendure/queries";
 
 async function getFeaturedCollectionProducts() {
     'use cache'
-    cacheLife('days')
+    cacheLife('hours')  // 'days' → 'hours': product updates appear within 1h max
     cacheTag('featured-products', 'products')
 
-    // Fetch featured products from a specific collection
-    // Replace 'featured' with your actual collection slug
+    // TODO: replace 'electronics' with your actual featured collection slug
+    // e.g. 'khukuri', 'featured', or whichever collection you want on the homepage
     const result = await query(GetCollectionProductsQuery, {
         slug: "electronics",
         input: {
