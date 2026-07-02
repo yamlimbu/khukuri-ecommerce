@@ -26,9 +26,9 @@ export async function TopCategories() {
 
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     {categories.map((category) => (
-                        <Link 
-                            key={category.id} 
-                            href={`/search?collection=${category.slug}`}
+                        <Link
+                            key={category.id}
+                            href={`/collection/${category.slug}`}
                             className="group relative flex flex-col items-center p-4 bg-card border border-border rounded-lg hover:border-emerald-500/50 transition-all shadow-sm hover:shadow-md"
                         >
                             <div className="w-full aspect-square mb-4 relative rounded-md overflow-hidden bg-muted">
