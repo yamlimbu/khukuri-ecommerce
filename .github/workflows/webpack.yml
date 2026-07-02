@@ -28,11 +28,19 @@ jobs:
             bash -l -s << 'ENDSSH'
             set -e   # abort on any error
 
-            # ── Load node/npm ──────────────────────────────────────────────────
-            # Source nvm if installed (covers servers where nvm is in .bashrc)
+            # ── Load Node 20+ ─────────────────────────────────────────────────
+            # Source nvm (handles both .bashrc and .bash_profile configs)
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
-            # Fallback: add common system paths in case nvm is not used
+
+            # Install Node 20 LTS if not present, then switch to it
+            nvm install 20
+            nvm use 20
+            nvm alias default 20
+
+            echo "==> Node: $(node -v)  npm: $(npm -v)"
+
+            # Fallback: add common system paths
             export PATH="/usr/local/bin:/usr/bin:$PATH"
 
             APP_DIR="htdocs/himalayankhukuri.com/khukuri-ecommerce"
@@ -46,7 +54,8 @@ jobs:
 
             # ── BACKEND ──────────────────────────────────────────────────────
             echo "==> Building Vendure server..."
-            npm run build -w server
+            # NODE_ENV=production ensures vite uses api:{host:'auto'} (not dev localhost)
+            NODE_ENV=production npm run build -w server
 
             echo "==> Restarting Vendure backend..."
             npx pm2 delete vendure-backend 2>/dev/null || true
