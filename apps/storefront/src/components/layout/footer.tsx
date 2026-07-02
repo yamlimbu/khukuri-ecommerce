@@ -1,4 +1,4 @@
-import { cacheLife, cacheTag } from 'next/cache';
+import { cacheLife } from 'next/cache';
 import { getTopCollections } from '@/lib/vendure/cached';
 import Link from "next/link";
 
@@ -16,10 +16,9 @@ async function Copyright() {
 }
 
 export async function Footer() {
-    'use cache';
-    cacheLife('hours');  // 'days' → 'hours': collection slug renames appear within 1h
-    cacheTag('collections');
-
+    // No 'use cache' here — the component renders fresh every request.
+    // Data is cached by getTopCollections() internally (cacheTag 'collections').
+    // Removing the outer cache avoids stale empty HTML being served for hours.
     const collections = await getTopCollections();
     const shopName = process.env.NEXT_PUBLIC_SHOP_NAME ?? 'Khukuri House';
 
