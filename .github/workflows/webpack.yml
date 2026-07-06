@@ -27,10 +27,8 @@ jobs:
             REVALIDATION_SECRET="$REVALIDATION_SECRET" \
             bash -l -s << 'ENDSSH'
             set -e   # abort on any error
-
             # ── Bootstrap nvm + Node 20 LTS ───────────────────────────────────
             export NVM_DIR="$HOME/.nvm"
-
             # Install nvm if not present (first-time server setup)
             if [ ! -s "$NVM_DIR/nvm.sh" ]; then
               echo "==> nvm not found — installing nvm v0.40.3..."
