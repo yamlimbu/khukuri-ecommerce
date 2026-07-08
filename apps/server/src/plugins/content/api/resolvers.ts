@@ -2,6 +2,7 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Allow, Ctx, Permission, RequestContext, Transaction } from '@vendure/core';
 import { BannerService } from '../services/banner.service';
 import { PageService } from '../services/page.service';
+import { SiteSettingService } from '../services/site-setting.service';
 
 /**
  * Notify the Next.js storefront to invalidate the 'banners' cache tag.
@@ -48,11 +49,41 @@ async function triggerBannerRevalidation(): Promise<void> {
     }
 }
 
+async function triggerSettingsRevalidation(): Promise<void> {
+    const secret = process.env.REVALIDATION_SECRET;
+
+    if (!secret) {
+        return;
+    }
+
+    const endpoint = (
+        process.env.REVALIDATION_ENDPOINT ||
+        process.env.FRONTEND_URL ||
+        'http://localhost:3001'
+    ).replace(/\/$/, '');
+
+    const url = `${endpoint}/api/revalidate`;
+
+    try {
+        await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${secret}`,
+            },
+            body: JSON.stringify({ tags: ['settings'] }),
+        });
+    } catch (err) {
+        console.error('[ContentPlugin] Network error calling settings revalidation endpoint:', err);
+    }
+}
+
 @Resolver()
 export class ContentAdminResolver {
     constructor(
         private bannerService: BannerService,
-        private pageService: PageService
+        private pageService: PageService,
+        private siteSettingService: SiteSettingService,
     ) {}
 
     @Query()
@@ -127,13 +158,29 @@ export class ContentAdminResolver {
     async deletePage(@Ctx() ctx: RequestContext, @Args() args: any) {
         return this.pageService.delete(ctx, args.id);
     }
+
+    @Query()
+    @Allow(Permission.ReadSettings)
+    async siteSettings(@Ctx() ctx: RequestContext) {
+        return this.siteSettingService.getSettings(ctx);
+    }
+
+    @Transaction()
+    @Mutation()
+    @Allow(Permission.UpdateSettings)
+    async updateSiteSettings(@Ctx() ctx: RequestContext, @Args() args: any) {
+        const result = await this.siteSettingService.updateSettings(ctx, args.input);
+        triggerSettingsRevalidation().catch(() => {});
+        return result;
+    }
 }
 
 @Resolver()
 export class ContentShopResolver {
     constructor(
         private bannerService: BannerService,
-        private pageService: PageService
+        private pageService: PageService,
+        private siteSettingService: SiteSettingService,
     ) {}
 
     @Query()
@@ -149,5 +196,10 @@ export class ContentShopResolver {
     @Query()
     async pageBySlug(@Ctx() ctx: RequestContext, @Args() args: any) {
         return this.pageService.findBySlug(ctx, args.slug);
+    }
+
+    @Query()
+    async siteSettings(@Ctx() ctx: RequestContext) {
+        return this.siteSettingService.getSettings(ctx);
     }
 }

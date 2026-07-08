@@ -616,19 +616,334 @@ const PagesPage = () => (
     </Page>
 );
 
-const SettingsPage = () => (
-    <Page pageId="settings-page">
-        <PageTitle>Site Setting</PageTitle>
-        <PageLayout>
-            <PageBlock column="main" blockId="settings-info">
-                <h2 className="text-xl font-semibold">Site Setting</h2>
-                <p className="text-muted-foreground mt-2">
-                    This page is a placeholder for site settings management. It will be developed soon.
-                </p>
-            </PageBlock>
-        </PageLayout>
-    </Page>
-);
+interface SettingsFormValues {
+    siteName: string;
+    metaTitle: string;
+    metaDescription: string;
+    metaKeywords: string;
+    logoId: string | null;
+    logoPreview: string | null;
+    faviconId: string | null;
+    faviconPreview: string | null;
+    facebookUrl: string;
+    instagramUrl: string;
+    tiktokUrl: string;
+    whatsappUrl: string;
+}
+
+const initialSettingsForm: SettingsFormValues = {
+    siteName: '',
+    metaTitle: '',
+    metaDescription: '',
+    metaKeywords: '',
+    logoId: null,
+    logoPreview: null,
+    faviconId: null,
+    faviconPreview: null,
+    facebookUrl: '',
+    instagramUrl: '',
+    tiktokUrl: '',
+    whatsappUrl: '',
+};
+
+const SettingsPage = () => {
+    const [form, setForm] = useState<SettingsFormValues>(initialSettingsForm);
+    const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [selectedLogo, setSelectedLogo] = useState<Asset | null>(null);
+    const [selectedFavicon, setSelectedFavicon] = useState<Asset | null>(null);
+    const [pickingAssetType, setPickingAssetType] = useState<'logo' | 'favicon' | null>(null);
+
+    const loadSettings = async () => {
+        setLoading(true);
+        try {
+            const result = await fetch('/api/settings').then(res => res.json());
+            setForm({
+                siteName: result.siteName || '',
+                metaTitle: result.metaTitle || '',
+                metaDescription: result.metaDescription || '',
+                metaKeywords: result.metaKeywords || '',
+                logoId: result.logo?.id || null,
+                logoPreview: result.logo?.preview || null,
+                faviconId: result.favicon?.id || null,
+                faviconPreview: result.favicon?.preview || null,
+                facebookUrl: result.facebookUrl || '',
+                instagramUrl: result.instagramUrl || '',
+                tiktokUrl: result.tiktokUrl || '',
+                whatsappUrl: result.whatsappUrl || '',
+            });
+            if (result.logo) {
+                setSelectedLogo(result.logo);
+            }
+            if (result.favicon) {
+                setSelectedFavicon(result.favicon);
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Unable to load settings: ' + (error instanceof Error ? error.message : 'Unknown error'));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        void loadSettings();
+    }, []);
+
+    const handleAssetSelect = (assets: Asset[]) => {
+        const selected = assets[0];
+        if (!selected) return;
+
+        if (pickingAssetType === 'logo') {
+            setSelectedLogo(selected);
+            setForm(f => ({
+                ...f,
+                logoId: selected.id,
+                logoPreview: selected.preview,
+            }));
+        } else if (pickingAssetType === 'favicon') {
+            setSelectedFavicon(selected);
+            setForm(f => ({
+                ...f,
+                faviconId: selected.id,
+                faviconPreview: selected.preview,
+            }));
+        }
+        setPickingAssetType(null);
+    };
+
+    const saveSettings = async () => {
+        setSaving(true);
+        try {
+            const headers: Record<string, string> = {
+                'Content-Type': 'application/json',
+            };
+            const token = getAuthToken();
+            if (token) {
+                headers.Authorization = `Bearer ${token}`;
+            }
+
+            const response = await fetch('/api/settings', {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify(form),
+                credentials: 'include',
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.message || 'Failed to save settings');
+            }
+
+            alert('Settings saved successfully!');
+            void loadSettings();
+        } catch (error) {
+            console.error(error);
+            alert('Error saving settings: ' + (error instanceof Error ? error.message : 'Unknown error'));
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <Page pageId="settings-page">
+                <PageTitle>Site Setting</PageTitle>
+                <PageLayout>
+                    <PageBlock column="main" blockId="settings-loading">
+                        <div>Loading settings...</div>
+                    </PageBlock>
+                </PageLayout>
+            </Page>
+        );
+    }
+
+    return (
+        <Page pageId="settings-page">
+            <PageTitle>Site Setting</PageTitle>
+            <PageLayout>
+                <PageBlock column="main" blockId="settings-form">
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 24, maxWidth: 800 }}>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <h3 style={{ margin: 0, fontSize: 18, borderBottom: '1px solid #e5e7eb', paddingBottom: 8 }}>Global Configurations</h3>
+                            
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                Site name
+                                <input
+                                    value={form.siteName}
+                                    onChange={(e) => setForm({ ...form, siteName: e.target.value })}
+                                    style={{ padding: 10, borderRadius: 6, border: '1px solid #d1d5db' }}
+                                />
+                            </label>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <h3 style={{ margin: 0, fontSize: 18, borderBottom: '1px solid #e5e7eb', paddingBottom: 8 }}>Asset Configuration</h3>
+                            
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                    Logo
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                        {form.logoPreview ? (
+                                            <div style={{ position: 'relative', width: 120, height: 40, border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+                                                <img
+                                                    src={form.logoPreview}
+                                                    alt="Logo Preview"
+                                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div style={{ padding: '10px 0', color: '#9ca3af', fontSize: 13 }}>No logo selected</div>
+                                        )}
+                                        <div style={{ display: 'flex', gap: 8 }}>
+                                            <Button type="button" onClick={() => setPickingAssetType('logo')}>Choose image</Button>
+                                            {form.logoId && (
+                                                <Button type="button" onClick={() => {
+                                                    setSelectedLogo(null);
+                                                    setForm({ ...form, logoId: null, logoPreview: null });
+                                                }}>Clear</Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                    Favicon
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                        {form.faviconPreview ? (
+                                            <div style={{ position: 'relative', width: 32, height: 32, border: '1px solid #e5e7eb', borderRadius: 6, overflow: 'hidden' }}>
+                                                <img
+                                                    src={form.faviconPreview}
+                                                    alt="Favicon Preview"
+                                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div style={{ padding: '10px 0', color: '#9ca3af', fontSize: 13 }}>No favicon selected</div>
+                                        )}
+                                        <div style={{ display: 'flex', gap: 8 }}>
+                                            <Button type="button" onClick={() => setPickingAssetType('favicon')}>Choose image</Button>
+                                            {form.faviconId && (
+                                                <Button type="button" onClick={() => {
+                                                    setSelectedFavicon(null);
+                                                    setForm({ ...form, faviconId: null, faviconPreview: null });
+                                                }}>Clear</Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <h3 style={{ margin: 0, fontSize: 18, borderBottom: '1px solid #e5e7eb', paddingBottom: 8 }}>SEO & Meta Configurations</h3>
+
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                Meta title
+                                <input
+                                    value={form.metaTitle}
+                                    onChange={(e) => setForm({ ...form, metaTitle: e.target.value })}
+                                    style={{ padding: 10, borderRadius: 6, border: '1px solid #d1d5db' }}
+                                />
+                            </label>
+
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                Meta description
+                                <textarea
+                                    value={form.metaDescription}
+                                    onChange={(e) => setForm({ ...form, metaDescription: e.target.value })}
+                                    rows={4}
+                                    style={{ padding: 10, borderRadius: 6, border: '1px solid #d1d5db', fontFamily: 'inherit' }}
+                                />
+                            </label>
+
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                Meta keywords (comma-separated)
+                                <input
+                                    value={form.metaKeywords}
+                                    onChange={(e) => setForm({ ...form, metaKeywords: e.target.value })}
+                                    style={{ padding: 10, borderRadius: 6, border: '1px solid #d1d5db' }}
+                                />
+                            </label>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <h3 style={{ margin: 0, fontSize: 18, borderBottom: '1px solid #e5e7eb', paddingBottom: 8 }}>Social Media Configurations</h3>
+
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                Facebook URL
+                                <input
+                                    value={form.facebookUrl}
+                                    onChange={(e) => setForm({ ...form, facebookUrl: e.target.value })}
+                                    style={{ padding: 10, borderRadius: 6, border: '1px solid #d1d5db' }}
+                                />
+                            </label>
+
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                Instagram URL
+                                <input
+                                    value={form.instagramUrl}
+                                    onChange={(e) => setForm({ ...form, instagramUrl: e.target.value })}
+                                    style={{ padding: 10, borderRadius: 6, border: '1px solid #d1d5db' }}
+                                />
+                            </label>
+
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                TikTok URL
+                                <input
+                                    value={form.tiktokUrl}
+                                    onChange={(e) => setForm({ ...form, tiktokUrl: e.target.value })}
+                                    style={{ padding: 10, borderRadius: 6, border: '1px solid #d1d5db' }}
+                                />
+                            </label>
+
+                            <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                WhatsApp URL (or chat link)
+                                <input
+                                    value={form.whatsappUrl}
+                                    onChange={(e) => setForm({ ...form, whatsappUrl: e.target.value })}
+                                    style={{ padding: 10, borderRadius: 6, border: '1px solid #d1d5db' }}
+                                />
+                            </label>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+                            <button
+                                type="button"
+                                onClick={saveSettings}
+                                disabled={saving}
+                                style={{
+                                    padding: '10px 20px',
+                                    backgroundColor: '#10b981',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: 6,
+                                    cursor: 'pointer',
+                                    fontWeight: 'bold',
+                                    opacity: saving ? 0.7 : 1,
+                                }}
+                            >
+                                {saving ? 'Saving…' : 'Save configuration'}
+                            </button>
+                        </div>
+
+                    </div>
+                </PageBlock>
+            </PageLayout>
+            <AssetPickerDialog
+                open={pickingAssetType !== null}
+                onClose={() => setPickingAssetType(null)}
+                onSelect={handleAssetSelect}
+                initialSelectedAssets={
+                    pickingAssetType === 'logo'
+                        ? (selectedLogo ? [selectedLogo] : [])
+                        : (selectedFavicon ? [selectedFavicon] : [])
+                }
+            />
+        </Page>
+    );
+};
 
 export default defineDashboardExtension({
     navSections: [

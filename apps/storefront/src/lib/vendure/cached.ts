@@ -52,3 +52,81 @@ export async function getTopCollections() {
         .slice(0, 8);
 }
 
+// ---------------------------------------------------------------------------
+// Site Settings
+// ---------------------------------------------------------------------------
+
+export interface SiteSettings {
+    id: string;
+    siteName: string;
+    metaTitle: string | null;
+    metaDescription: string | null;
+    metaKeywords: string | null;
+    logo: { id: string; preview: string; source: string } | null;
+    favicon: { id: string; preview: string; source: string } | null;
+    facebookUrl: string | null;
+    instagramUrl: string | null;
+    tiktokUrl: string | null;
+    whatsappUrl: string | null;
+}
+
+const SITE_SETTINGS_FALLBACK: SiteSettings = {
+    id: '',
+    siteName: 'Himalayan Khukuri House',
+    metaTitle: 'Himalayan Khukuri House - Finest Kukris from Nepal',
+    metaDescription:
+        'Himalayan Khukuri House Nepal brings you the finest kukris handmade by Nepalese Blacksmiths. High-quality hand-forged blades with a lifetime warranty.',
+    metaKeywords: 'kukri, khukuri, nepal, handmade kukri, gurkha knife, forged blade',
+    logo: null,
+    favicon: null,
+    facebookUrl: null,
+    instagramUrl: null,
+    tiktokUrl: null,
+    whatsappUrl: null,
+};
+
+/**
+ * Fetch site-wide settings (logo, favicon, meta, social links) and cache them
+ * under the 'settings' tag. The Vendure server calls revalidateTag('settings')
+ * automatically whenever the admin saves new settings, so this cache stays fresh.
+ */
+export async function getSiteSettings(): Promise<SiteSettings> {
+    'use cache';
+    cacheLife({ stale: 0, revalidate: 300, expire: 3600 });
+    cacheTag('settings');
+
+    const apiUrl =
+        process.env.VENDURE_INTERNAL_API_URL ||
+        process.env.NEXT_PUBLIC_VENDURE_SHOP_API_URL?.replace('/shop-api', '') ||
+        'http://localhost:3000';
+
+    try {
+        const res = await fetch(`${apiUrl}/api/settings`, {
+            headers: { 'Content-Type': 'application/json' },
+            next: { tags: ['settings'] },
+        });
+
+        if (!res.ok) {
+            console.warn('[getSiteSettings] API returned', res.status, '— using fallback');
+            return SITE_SETTINGS_FALLBACK;
+        }
+
+        const data = await res.json();
+        return {
+            id: data.id ?? '',
+            siteName: data.siteName || SITE_SETTINGS_FALLBACK.siteName,
+            metaTitle: data.metaTitle || null,
+            metaDescription: data.metaDescription || null,
+            metaKeywords: data.metaKeywords || null,
+            logo: data.logo ?? null,
+            favicon: data.favicon ?? null,
+            facebookUrl: data.facebookUrl ?? null,
+            instagramUrl: data.instagramUrl ?? null,
+            tiktokUrl: data.tiktokUrl ?? null,
+            whatsappUrl: data.whatsappUrl ?? null,
+        };
+    } catch (err) {
+        console.warn('[getSiteSettings] Fetch error — using fallback:', err);
+        return SITE_SETTINGS_FALLBACK;
+    }
+}

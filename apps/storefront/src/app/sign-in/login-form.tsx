@@ -18,6 +18,8 @@ import {
 } from '@/components/ui/form';
 import Link from 'next/link';
 
+import {useSearchParams} from 'next/navigation';
+
 const loginSchema = z.object({
     username: z.email('Please enter a valid email address'),
     password: z.string().min(1, 'Password is required'),
@@ -32,6 +34,8 @@ interface LoginFormProps {
 export function LoginForm({redirectTo}: LoginFormProps) {
     const [isPending, startTransition] = useTransition();
     const [serverError, setServerError] = useState<string | null>(null);
+    const searchParams = useSearchParams();
+    const isRegistered = searchParams.get('registered') === 'true';
 
     const form = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema),
@@ -68,6 +72,11 @@ export function LoginForm({redirectTo}: LoginFormProps) {
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <CardContent className="space-y-4">
+                        {isRegistered && (
+                            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-md p-3 text-sm mb-4">
+                                Registration successful! You can now log in below.
+                            </div>
+                        )}
                         <FormField
                             control={form.control}
                             name="username"

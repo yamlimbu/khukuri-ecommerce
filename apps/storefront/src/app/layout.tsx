@@ -6,7 +6,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { SITE_NAME, SITE_URL } from "@/lib/metadata";
+import { SITE_URL } from "@/lib/metadata";
+import { getSiteSettings } from "@/lib/vendure/cached";
+import Script from "next/script";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -18,34 +20,82 @@ const geistMono = Geist_Mono({
     subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-    metadataBase: new URL(SITE_URL),
-    title: {
-        default: SITE_NAME,
-        template: `%s | ${SITE_NAME}`,
-    },
-    description:
-        "Shop the best products at Vendure Store. Quality products, competitive prices, and fast delivery.",
-    openGraph: {
-        type: "website",
-        siteName: SITE_NAME,
-        locale: "en_US",
-    },
-    twitter: {
-        card: "summary_large_image",
-    },
-    robots: {
-        index: true,
-        follow: true,
-        googleBot: {
+const GA_MEASUREMENT_ID = "G-XKKJB152D8";
+
+// Fallback constants
+const FALLBACK_SITE_NAME = "Himalayan Khukuri House";
+const FALLBACK_META_TITLE = "Himalayan Khukuri House - Finest Kukris from Nepal";
+const FALLBACK_META_DESCRIPTION =
+    "Himalayan Khukuri House Nepal brings you the finest kukris handmade by Nepalese Blacksmiths. High-quality hand-forged blades with a lifetime warranty.";
+const FALLBACK_META_KEYWORDS =
+    "kukri, khukuri, nepal, handmade kukri, gurkha knife, forged blade";
+
+export async function generateMetadata(): Promise<Metadata> {
+    const settings = await getSiteSettings();
+
+    const siteName = settings.siteName || FALLBACK_SITE_NAME;
+    const metaTitle = settings.metaTitle || FALLBACK_META_TITLE;
+    const metaDescription = settings.metaDescription || FALLBACK_META_DESCRIPTION;
+    const metaKeywords = settings.metaKeywords || FALLBACK_META_KEYWORDS;
+    const logoUrl = settings.logo?.preview ?? null;
+
+    // Build favicon metadata
+    const icons: Metadata["icons"] = settings.favicon?.preview
+        ? {
+              icon: settings.favicon.preview,
+              apple: settings.favicon.preview,
+          }
+        : {
+              icon: "/favicon.ico",
+          };
+
+    return {
+        metadataBase: new URL(SITE_URL),
+        title: {
+            default: metaTitle,
+            template: `%s | ${siteName}`,
+        },
+        description: metaDescription,
+        keywords: metaKeywords,
+        icons,
+        alternates: {
+            canonical: SITE_URL,
+        },
+        openGraph: {
+            type: "website",
+            siteName,
+            locale: "en_US",
+            title: metaTitle,
+            description: metaDescription,
+            url: SITE_URL,
+            ...(logoUrl && {
+                images: [
+                    {
+                        url: logoUrl,
+                        alt: siteName,
+                    },
+                ],
+            }),
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: metaTitle,
+            description: metaDescription,
+            ...(logoUrl && { images: [logoUrl] }),
+        },
+        robots: {
             index: true,
             follow: true,
-            "max-video-preview": -1,
-            "max-image-preview": "large",
-            "max-snippet": -1,
+            googleBot: {
+                index: true,
+                follow: true,
+                "max-video-preview": -1,
+                "max-image-preview": "large",
+                "max-snippet": -1,
+            },
         },
-    },
-};
+    };
+}
 
 export const viewport: Viewport = {
     width: "device-width",
@@ -57,9 +107,24 @@ export const viewport: Viewport = {
     ],
 };
 
-export default function RootLayout({ children }: LayoutProps<'/'>) {
+export default function RootLayout({ children }: LayoutProps<"/">) {
     return (
         <html lang="en" suppressHydrationWarning>
+            <head>
+                {/* Google Analytics */}
+                <Script
+                    src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+                    strategy="afterInteractive"
+                />
+                <Script id="google-analytics" strategy="afterInteractive">
+                    {`
+                        window.dataLayer = window.dataLayer || [];
+                        function gtag(){dataLayer.push(arguments);}
+                        gtag('js', new Date());
+                        gtag('config', '${GA_MEASUREMENT_ID}');
+                    `}
+                </Script>
+            </head>
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
             >

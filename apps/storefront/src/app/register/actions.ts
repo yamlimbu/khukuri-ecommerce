@@ -33,11 +33,10 @@ export async function registerAction(prevState: { error?: string } | undefined, 
         return {error: registerResult.message};
     }
 
-    // Redirect to verification pending page, preserving redirectTo if present
-    const verifyUrl = redirectTo
-        ? `/verify-pending?redirectTo=${encodeURIComponent(redirectTo)}`
-        : '/verify-pending';
+    // Redirect to sign-in page, preserving redirectTo if present and passing registered=true
+    const signInUrl = redirectTo
+        ? `/sign-in?redirectTo=${encodeURIComponent(redirectTo)}&registered=true`
+        : '/sign-in?registered=true';
 
-    redirect(verifyUrl);
-
+    redirect(signInUrl);
 }

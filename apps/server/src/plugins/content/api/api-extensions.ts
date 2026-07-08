@@ -35,6 +35,22 @@ const commonExtensions = gql`
         items: [Page!]!
         totalItems: Int!
     }
+
+    type SiteSetting implements Node {
+        id: ID!
+        createdAt: DateTime!
+        updatedAt: DateTime!
+        siteName: String!
+        metaTitle: String
+        metaDescription: String
+        metaKeywords: String
+        logo: Asset
+        favicon: Asset
+        facebookUrl: String
+        instagramUrl: String
+        tiktokUrl: String
+        whatsappUrl: String
+    }
 `;
 
 export const adminApiExtensions = gql`
@@ -45,6 +61,7 @@ export const adminApiExtensions = gql`
         banner(id: ID!): Banner
         pages: PageList!
         page(id: ID!): Page
+        siteSettings: SiteSetting
     }
 
     input CreateBannerInput {
@@ -87,6 +104,19 @@ export const adminApiExtensions = gql`
         isPublished: Boolean
     }
 
+    input UpdateSiteSettingsInput {
+        siteName: String!
+        metaTitle: String
+        metaDescription: String
+        metaKeywords: String
+        logoId: ID
+        faviconId: ID
+        facebookUrl: String
+        instagramUrl: String
+        tiktokUrl: String
+        whatsappUrl: String
+    }
+
     extend type Mutation {
         createBanner(input: CreateBannerInput!): Banner!
         updateBanner(input: UpdateBannerInput!): Banner!
@@ -95,6 +125,8 @@ export const adminApiExtensions = gql`
         createPage(input: CreatePageInput!): Page!
         updatePage(input: UpdatePageInput!): Page!
         deletePage(id: ID!): DeletionResponse!
+
+        updateSiteSettings(input: UpdateSiteSettingsInput!): SiteSetting!
     }
 `;
 
@@ -105,5 +137,6 @@ export const shopApiExtensions = gql`
         banners: [Banner!]!
         pages: PageList!
         pageBySlug(slug: String!): Page
+        siteSettings: SiteSetting
     }
 `;

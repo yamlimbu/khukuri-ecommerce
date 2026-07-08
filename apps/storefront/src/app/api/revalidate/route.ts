@@ -8,6 +8,7 @@ const VALID_TAGS = [
     'featured-products',
     'products',
     'banners',
+    'settings',
 ] as const;
 
 // Dynamic tags follow patterns like 'product-{slug}', 'collection-{slug}', 'related-products-{slug}'
