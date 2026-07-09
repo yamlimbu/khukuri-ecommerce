@@ -131,7 +131,7 @@ jobs:
             else
               echo "==> /api/settings already present in Nginx config — skipping"
             fi
-
+            
             echo ""
             echo "✅ Deployment completed!"
             echo "   Backend   : port 3002 (Vendure)"
