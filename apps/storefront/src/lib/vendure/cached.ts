@@ -1,6 +1,6 @@
-import {cacheLife, cacheTag} from 'next/cache';
-import {query} from './api';
-import {GetActiveChannelQuery, GetAvailableCountriesQuery, GetTopCollectionsQuery} from './queries';
+import { cacheLife, cacheTag } from 'next/cache';
+import { query } from './api';
+import { GetActiveChannelQuery, GetAvailableCountriesQuery, GetTopCollectionsQuery } from './queries';
 
 /**
  * Get the active channel with caching enabled.
@@ -131,3 +131,4 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         return SITE_SETTINGS_FALLBACK;
     }
 }
+
