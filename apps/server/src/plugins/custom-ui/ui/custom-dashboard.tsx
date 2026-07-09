@@ -9,6 +9,7 @@ import {
     PageLayout,
     PageTitle,
     VendureImage,
+    TranslatableFormFieldWrapper,
 } from '@vendure/dashboard';
 import { FileText, Image, Settings, Layers } from 'lucide-react';
 
@@ -1059,7 +1060,143 @@ const SettingsPage = () => {
     );
 };
 
+// ─── Product SEO Block ────────────────────────────────────────────────────────
+
+const META_TITLE_MAX = 60;
+const META_DESC_MAX = 160;
+
+const ProductSeoBlock = ({ context }: { context: any }) => {
+    const { form } = context;
+    if (!form) return null;
+
+    // NOTE: The layout engine already wraps this component in a PageBlock/Card.
+    // We render a plain div here to avoid double-nested card borders.
+    // Character counts are computed INSIDE each render prop from field.value,
+    // which is always the value for the currently-active translation language.
+    return (
+        <div>
+            {/* Header */}
+            <div style={{ marginBottom: 20 }}>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                    </svg>
+                    SEO
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--muted-foreground, #6b7280)' }}>
+                    Customize the meta title and description shown in search engine results.
+                </p>
+            </div>
+
+            {/* Meta Title — bound to translations[activeIndex].customFields.metaTitle */}
+            <div style={{ marginBottom: 20 }}>
+                <TranslatableFormFieldWrapper
+                    control={form.control}
+                    name={"customFields.metaTitle" as any}
+                    label="Meta Title"
+                    renderFormControl
+                    render={({ field }: any) => {
+                        const val: string = field.value ?? '';
+                        const len = val.length;
+                        return (
+                            <div>
+                                <input
+                                    {...field}
+                                    value={val}
+                                    maxLength={META_TITLE_MAX}
+                                    placeholder="e.g. Buy Authentic Khukuri Knives – Himalayan Khukuri"
+                                    style={{
+                                        width: '100%',
+                                        padding: '8px 12px',
+                                        borderRadius: 6,
+                                        border: `1px solid ${len > META_TITLE_MAX ? '#ef4444' : 'var(--border, #d1d5db)'}`,
+                                        fontSize: 14,
+                                        backgroundColor: 'var(--background, #fff)',
+                                        color: 'var(--foreground, #111)',
+                                        boxSizing: 'border-box' as const,
+                                        outline: 'none',
+                                    }}
+                                />
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    marginTop: 4,
+                                    fontSize: 12,
+                                    color: len > META_TITLE_MAX ? '#ef4444' : 'var(--muted-foreground, #9ca3af)',
+                                }}>
+                                    <span>Recommended: 50–60 characters</span>
+                                    <span>{len} / {META_TITLE_MAX}</span>
+                                </div>
+                            </div>
+                        );
+                    }}
+                />
+            </div>
+
+            {/* Meta Description — bound to translations[activeIndex].customFields.metaDescription */}
+            <div>
+                <TranslatableFormFieldWrapper
+                    control={form.control}
+                    name={"customFields.metaDescription" as any}
+                    label="Meta Description"
+                    renderFormControl
+                    render={({ field }: any) => {
+                        const val: string = field.value ?? '';
+                        const len = val.length;
+                        return (
+                            <div>
+                                <textarea
+                                    {...field}
+                                    value={val}
+                                    maxLength={META_DESC_MAX}
+                                    rows={4}
+                                    placeholder="e.g. Hand-crafted Nepalese khukuri knives made by skilled craftsmen in the Himalayas."
+                                    style={{
+                                        width: '100%',
+                                        padding: '8px 12px',
+                                        borderRadius: 6,
+                                        border: `1px solid ${len > META_DESC_MAX ? '#ef4444' : 'var(--border, #d1d5db)'}`,
+                                        fontSize: 14,
+                                        backgroundColor: 'var(--background, #fff)',
+                                        color: 'var(--foreground, #111)',
+                                        boxSizing: 'border-box' as const,
+                                        resize: 'vertical',
+                                        outline: 'none',
+                                        fontFamily: 'inherit',
+                                    }}
+                                />
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    marginTop: 4,
+                                    fontSize: 12,
+                                    color: len > META_DESC_MAX ? '#ef4444' : 'var(--muted-foreground, #9ca3af)',
+                                }}>
+                                    <span>Recommended: 120–160 characters</span>
+                                    <span>{len} / {META_DESC_MAX}</span>
+                                </div>
+                            </div>
+                        );
+                    }}
+                />
+            </div>
+        </div>
+    );
+};
+
+
 export default defineDashboardExtension({
+    pageBlocks: [
+        {
+            id: 'product-seo-block',
+            location: {
+                pageId: 'product-detail',
+                column: 'main',
+                position: { blockId: 'main-form', order: 'after' },
+            },
+            component: ProductSeoBlock,
+        },
+    ],
     navSections: [
         {
             id: 'content',
@@ -1109,4 +1246,6 @@ export default defineDashboardExtension({
         },
     },
 });
+
+
 

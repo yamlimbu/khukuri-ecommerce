@@ -20,6 +20,8 @@ import {
     buildOgImages,
 } from '@/lib/metadata';
 
+import { getSiteSettings } from '@/lib/vendure/cached';
+
 async function getProductData(slug: string) {
     'use cache';
     cacheLife('hours');
@@ -41,29 +43,43 @@ export async function generateMetadata({
         };
     }
 
-    const description = truncateDescription(product.description);
+    // Get site default fallbacks
+    const settings = await getSiteSettings();
+    const siteDefaultTitle = settings?.metaTitle || 'Himalayan Khukuri House - Finest Kukris from Nepal';
+    const siteDefaultDescription = settings?.metaDescription || 'Himalayan Khukuri House Nepal brings you the finest kukris handmade by Nepalese Blacksmiths.';
+
+    const customFields = product.customFields as Record<string, any> | null;
+    
+    // Title priority: 1. Product Meta Title, 2. Product Name, 3. Site Default Meta Title
+    const metaTitle = (customFields?.metaTitle as string | undefined)?.trim() || product.name || siteDefaultTitle;
+    
+    // Description priority: 1. Product Meta Description, 2. Product Description, 3. Site Default Description
+    const metaDescription = (customFields?.metaDescription as string | undefined)?.trim() 
+        || truncateDescription(product.description) 
+        || siteDefaultDescription;
+
     const ogImage = normalizeAssetUrl(
         product.assets?.[0]?.preview,
         product.assets?.[0]?.updatedAt
     );
 
     return {
-        title: product.name,
-        description: description || `Shop ${product.name} at ${SITE_NAME}`,
+        title: metaTitle,
+        description: metaDescription,
         alternates: {
             canonical: buildCanonicalUrl(`/product/${product.slug}`),
         },
         openGraph: {
-            title: product.name,
-            description: description || `Shop ${product.name} at ${SITE_NAME}`,
+            title: metaTitle,
+            description: metaDescription,
             type: 'website',
             url: buildCanonicalUrl(`/product/${product.slug}`),
             images: buildOgImages(ogImage, product.name),
         },
         twitter: {
             card: 'summary_large_image',
-            title: product.name,
-            description: description || `Shop ${product.name} at ${SITE_NAME}`,
+            title: metaTitle,
+            description: metaDescription,
             images: ogImage ? [ogImage] : undefined,
         },
     };

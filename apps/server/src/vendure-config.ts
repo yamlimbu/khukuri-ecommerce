@@ -144,7 +144,22 @@ export const config: VendureConfig = {
         paymentMethodHandlers: [dummyPaymentHandler],
     },
 
-    customFields: {},
+    customFields: {
+        Product: [
+            {
+                name: 'metaTitle',
+                type: 'localeString',
+                public: true,
+                ui: { hide: true } as any,
+            },
+            {
+                name: 'metaDescription',
+                type: 'localeText',
+                public: true,
+                ui: { hide: true } as any,
+            },
+        ],
+    },
 
     plugins: [
         GraphiqlPlugin.init(),
