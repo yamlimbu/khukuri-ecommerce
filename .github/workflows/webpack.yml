@@ -73,9 +73,24 @@ jobs:
               --name vendure-worker \
               --cwd apps/server
 
-            # Give the backend 8s to bind to port 3002 before the build hits it
-            echo "==> Waiting for backend to be ready..."
-            sleep 8
+            # Wait for Vendure backend to be fully ready (port 3002)
+            # ── health-check loop: poll /health every 2s for up to 60s ──────────
+            echo "==> Waiting for Vendure backend on :3002 to be healthy..."
+            HEALTH_URL="http://127.0.0.1:3002/health"
+            MAX_WAIT=60
+            WAITED=0
+            until curl -sf "$HEALTH_URL" > /dev/null 2>&1; do
+              if [ "$WAITED" -ge "$MAX_WAIT" ]; then
+                echo "ERROR: Vendure backend did not become healthy after ${MAX_WAIT}s"
+                echo "       Last PM2 logs:"
+                npx pm2 logs vendure-backend --lines 30 --nostream 2>/dev/null || true
+                exit 1
+              fi
+              printf "  ... still waiting (%ds elapsed)\n" "$WAITED"
+              sleep 2
+              WAITED=$((WAITED + 2))
+            done
+            echo "==> Vendure backend is healthy after ${WAITED}s ✓"
 
             # ── STOREFRONT ───────────────────────────────────────────────────
             echo "==> Building Next.js storefront..."

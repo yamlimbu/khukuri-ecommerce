@@ -16,7 +16,7 @@ export async function TopViewedProducts() {
         input: { take: 10, groupByProduct: true }
     });
 
-    const products = result.data.search.items as Array<FragmentOf<typeof ProductCardFragment>>;
+    const products = (result.data?.search?.items ?? []) as Array<FragmentOf<typeof ProductCardFragment>>;
 
     if (!products || products.length === 0) {
         return null;

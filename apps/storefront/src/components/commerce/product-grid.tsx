@@ -20,10 +20,10 @@ export async function ProductGrid({productDataPromise, currentPage, take}: Produ
         getActiveChannel(),
     ]);
 
-    const searchResult = result.data.search;
-    const totalPages = Math.ceil(searchResult.totalItems / take);
+    const searchResult = result.data?.search;
+    const totalPages = Math.ceil((searchResult?.totalItems ?? 0) / take);
 
-    if (!searchResult.items.length) {
+    if (!searchResult?.items?.length) {
         return (
             <div className="text-center py-12">
                 <p className="text-muted-foreground">No products found</p>

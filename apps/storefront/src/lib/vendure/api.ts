@@ -93,17 +93,31 @@ export async function query<TResult, TVariables>(
     }
 
     if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.warn(
+            `[Vendure API Warning] HTTP ${response.status} for query: ${print(document).split('\n')[0].trim()}`
+        );
+        return {
+            data: {} as TResult,
+        };
     }
 
     const result: VendureResponse<TResult> = await response.json();
 
     if (result.errors) {
-        throw new Error(result.errors.map(e => e.message).join(', '));
+        console.warn(
+            `[Vendure API Warning] GraphQL errors for query: ${print(document).split('\n')[0].trim()}:`,
+            result.errors.map(e => e.message).join(', ')
+        );
+        return {
+            data: {} as TResult,
+        };
     }
 
     if (!result.data) {
-        throw new Error('No data returned from Vendure API');
+        console.warn(`[Vendure API Warning] No data returned for query: ${print(document).split('\n')[0].trim()}`);
+        return {
+            data: {} as TResult,
+        };
     }
 
     const newToken = extractAuthToken(response.headers);

@@ -20,7 +20,7 @@ async function getFeaturedCollectionProducts() {
         }
     });
 
-    return result.data.search.items;
+    return result.data?.search?.items ?? [];
 }
 
 
