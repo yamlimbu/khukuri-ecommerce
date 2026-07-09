@@ -111,6 +111,27 @@ jobs:
               && echo " Cache bust OK" \
               || echo " Cache bust failed (storefront may still be starting)"
 
+            # ── NGINX: ensure /api/settings routes to Vendure backend ────────
+            # The storefront catch-all in Nginx intercepts /api/* → port 3001.
+            # We need /api/settings (exact match) → port 3002 (Vendure backend).
+            # This idempotent snippet adds the location if not already present.
+            echo "==> Patching Nginx: route /api/settings to Vendure backend..."
+            NGINX_CONF=$(sudo nginx -T 2>/dev/null | grep -m1 'configuration file' | awk '{print $NF}' || true)
+            SITE_CONF=$(sudo find /etc/nginx/sites-enabled /etc/nginx/conf.d -name "*.conf" 2>/dev/null | head -1 || echo "")
+            TARGET_CONF="${SITE_CONF:-$NGINX_CONF}"
+
+            if [ -n "$TARGET_CONF" ] && ! sudo grep -q '/api/settings' "$TARGET_CONF" 2>/dev/null; then
+              echo "==> Adding /api/settings exact-match location to $TARGET_CONF"
+              # Insert exact-match block for /api/settings right before the first 'location /' block
+              sudo sed -i '/location \/ /i\    # Route custom Vendure REST endpoints to backend\n    location = /api/settings {\n        proxy_pass http:\/\/127.0.0.1:3002;\n        proxy_http_version 1.1;\n        proxy_set_header Host $host;\n        proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto $scheme;\n    }\n' "$TARGET_CONF" \
+                && sudo nginx -t \
+                && sudo nginx -s reload \
+                && echo " Nginx patched and reloaded" \
+                || echo " Nginx patch skipped or failed (manual check needed)"
+            else
+              echo "==> /api/settings already present in Nginx config — skipping"
+            fi
+
             echo ""
             echo "✅ Deployment completed!"
             echo "   Backend   : port 3002 (Vendure)"

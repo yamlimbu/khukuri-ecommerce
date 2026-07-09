@@ -134,8 +134,8 @@ if (typeof document !== 'undefined') {
     checkSuperAdmin();
     setInterval(checkSuperAdmin, 1000);
 
-    // 2. Fetch favicon dynamically from /admin-api/settings and update the document head
-    fetch('/admin-api/settings')
+    // 2. Fetch favicon dynamically from /api/settings and update the document head
+    fetch('/api/settings')
         .then(res => res.json())
         .then(data => {
             if (data?.favicon?.preview) {
@@ -764,20 +764,27 @@ const SettingsPage = () => {
     const loadSettings = async () => {
         setLoading(true);
         try {
-            const result = await fetch('/admin-api/settings').then(res => res.json());
+            const res = await fetch('/api/settings');
+            if (!res.ok) {
+                const body = await res.text();
+                console.error('[loadSettings] HTTP', res.status, res.statusText, body.slice(0, 500));
+                throw new Error(`Failed to load settings: ${res.status} ${res.statusText}`);
+            }
+            const result = await res.json();
+            console.log('[loadSettings] response:', result);
             setForm({
-                siteName: result.siteName || '',
-                metaTitle: result.metaTitle || '',
-                metaDescription: result.metaDescription || '',
-                metaKeywords: result.metaKeywords || '',
-                logoId: result.logo?.id || null,
-                logoPreview: result.logo?.preview || null,
-                faviconId: result.favicon?.id || null,
-                faviconPreview: result.favicon?.preview || null,
-                facebookUrl: result.facebookUrl || '',
-                instagramUrl: result.instagramUrl || '',
-                tiktokUrl: result.tiktokUrl || '',
-                whatsappUrl: result.whatsappUrl || '',
+                siteName: result.siteName ?? '',
+                metaTitle: result.metaTitle ?? '',
+                metaDescription: result.metaDescription ?? '',
+                metaKeywords: result.metaKeywords ?? '',
+                logoId: result.logo?.id ?? null,
+                logoPreview: result.logo?.preview ?? null,
+                faviconId: result.favicon?.id ?? null,
+                faviconPreview: result.favicon?.preview ?? null,
+                facebookUrl: result.facebookUrl ?? '',
+                instagramUrl: result.instagramUrl ?? '',
+                tiktokUrl: result.tiktokUrl ?? '',
+                whatsappUrl: result.whatsappUrl ?? '',
             });
             if (result.logo) {
                 setSelectedLogo(result.logo);
@@ -786,7 +793,7 @@ const SettingsPage = () => {
                 setSelectedFavicon(result.favicon);
             }
         } catch (error) {
-            console.error(error);
+            console.error('[loadSettings] error:', error);
             alert('Unable to load settings: ' + (error instanceof Error ? error.message : 'Unknown error'));
         } finally {
             setLoading(false);
@@ -830,7 +837,7 @@ const SettingsPage = () => {
                 headers.Authorization = `Bearer ${token}`;
             }
 
-            const response = await fetch('/admin-api/settings', {
+            const response = await fetch('/api/settings', {
                 method: 'PUT',
                 headers,
                 body: JSON.stringify(form),

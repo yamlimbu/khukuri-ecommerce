@@ -85,8 +85,22 @@ Full pipeline time: ~3–5 minutes
 ### 4. Verify on production after deploy
 
 - https://himalayankhukuri.com — site loads correctly
-- `GET https://himalayankhukuri.com/api/settings` — returns JSON with site settings (confirms `site_setting` table was created)
+- `GET https://himalayankhukuri.com/api/settings` — returns JSON with site settings (confirms `site_setting` table was created and Nginx routes this to the backend)
 - Admin dashboard → Settings tab — loads without error
+
+> **Nginx requirement**: The Nginx config must have an **exact-match** `location = /api/settings` block that proxies to port 3002 (Vendure backend) **before** the storefront catch-all `location /` block. The CI/CD script patches this automatically on deploy. If the Settings page shows a 400/404 error, manually add this to your Nginx site config:
+> ```nginx
+>     # Route Vendure custom REST settings API to backend
+>     location = /api/settings {
+>         proxy_pass http://127.0.0.1:3002;
+>         proxy_http_version 1.1;
+>         proxy_set_header Host $host;
+>         proxy_set_header X-Real-IP $remote_addr;
+>         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+>         proxy_set_header X-Forwarded-Proto $scheme;
+>     }
+> ```
+> Then run `sudo nginx -t && sudo nginx -s reload`.
 
 ---
 
