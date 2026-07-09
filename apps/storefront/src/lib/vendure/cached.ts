@@ -102,7 +102,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         'http://localhost:3000';
 
     try {
-        const res = await fetch(`${apiUrl}/api/settings`, {
+        const res = await fetch(`${apiUrl}/dashboard/api/settings`, {
             headers: { 'Content-Type': 'application/json' },
             next: { tags: ['settings'] },
         });

@@ -134,8 +134,8 @@ if (typeof document !== 'undefined') {
     checkSuperAdmin();
     setInterval(checkSuperAdmin, 1000);
 
-    // 2. Fetch favicon dynamically from /api/settings and update the document head
-    fetch('/api/settings')
+    // 2. Fetch favicon dynamically from /dashboard/api/settings and update the document head
+    fetch('/dashboard/api/settings')
         .then(res => res.json())
         .then(data => {
             if (data?.favicon?.preview) {
@@ -764,7 +764,7 @@ const SettingsPage = () => {
     const loadSettings = async () => {
         setLoading(true);
         try {
-            const result = await fetch('/api/settings').then(res => res.json());
+            const result = await fetch('/dashboard/api/settings').then(res => res.json());
             setForm({
                 siteName: result.siteName || '',
                 metaTitle: result.metaTitle || '',
@@ -830,7 +830,7 @@ const SettingsPage = () => {
                 headers.Authorization = `Bearer ${token}`;
             }
 
-            const response = await fetch('/api/settings', {
+            const response = await fetch('/dashboard/api/settings', {
                 method: 'PUT',
                 headers,
                 body: JSON.stringify(form),
