@@ -13,7 +13,7 @@ function isValidUrl(url: string | null | undefined): boolean {
     }
 }
 
-@Controller('dashboard/api/settings')
+@Controller('admin-api/settings')
 export class SiteSettingController {
     constructor(
         private siteSettingService: SiteSettingService,
