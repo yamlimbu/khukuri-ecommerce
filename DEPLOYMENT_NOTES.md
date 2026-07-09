@@ -1,111 +1,136 @@
-# Render Deployment Fix Summary
+# Deployment Notes — himalayankhukuri.com
 
-## Problem
-**Error on Render**: `Cannot query field "banners" on type "Query". Did you mean "channels"?`
+> **Production URL**: https://himalayankhukuri.com
+> **CI/CD**: GitHub Actions → SSH deploy on push to `main`
+> **Workflow file**: `.github/workflows/webpack.yml`
 
-This occurred because the `banners` GraphQL query was not exposed on the shop API, even though:
-1. The Banner table existed in the database
-2. Locally the query worked fine
-3. The migration was successful
+---
 
-## Root Cause
-The **ContentPlugin** that exposes the `banners` query through GraphQL schema extensions was completely missing from the codebase. Without the plugin, Vendure had no knowledge of the Banner entity or queries.
+## How CI/CD Works (webpack.yml)
 
-## Solution Implemented
+Every push to the `main` branch automatically:
 
-### New Files Created (apps/server/src/plugins/content/):
-```
-├── content.plugin.ts              # Main plugin with GraphQL extensions
-├── entities/
-│   └── banner.entity.ts          # TypeORM entity definition
-├── services/
-│   └── banner.service.ts         # Business logic for CRUD
-└── resolvers/
-    ├── admin-banner.resolver.ts  # Admin API queries/mutations
-    └── shop-banner.resolver.ts   # Shop API queries (public)
-```
+1. SSHs into the production server (`DEV_HOSTNAME`)
+2. `git pull origin main` — pulls latest code
+3. `npm install` — installs any new dependencies
+4. Builds Vendure backend: `NODE_ENV=production npm run build -w server`
+5. Restarts `vendure-backend` and `vendure-worker` via PM2
+6. Waits 8s for backend to bind on port **3002**
+7. Builds Next.js storefront: `npm run build -w storefront`
+8. Restarts `khukuri-storefront` on port **3001** via PM2
+9. Waits 15s, then busts Next.js cache tags (`featured-products`, `collections`, `banners`, `products`)
 
-### Changes to Existing Files:
-- **vendure-config.ts**: Added `import { ContentPlugin }` and registered it in the plugins array
-- **tsconfig.json**: No changes needed
+---
 
-### GraphQL Schema Extensions:
+## Migration Behaviour — Does It Run Automatically?
 
-**Shop API** (Public):
-```graphql
-extend type Query {
-  banners: [Banner!]!
-}
+**YES — migrations run automatically on every deploy.** No manual step needed.
+
+### Why it is automatic:
+
+**`apps/server/src/index.ts`** (server entry point):
+```ts
+runMigrations(config)
+  .then(() => bootstrap(config))
 ```
 
-**Admin API** (SuperAdmin):
-```graphql
-extend type Query {
-  banners(options: BannerListOptions): BannerList!
-  banner(id: ID!): Banner
-}
-
-extend type Mutation {
-  createBanner(input: CreateBannerInput!): Banner!
-  updateBanner(id: ID!, input: UpdateBannerInput!): Banner!
-  deleteBanner(id: ID!): Boolean!
-}
+**`apps/server/src/vendure-config.ts`**:
+```ts
+synchronize: false,
+migrationsRun: true,
+migrations: [
+  path.join(__dirname, './migrations/*.+(js|ts)')
+]
 ```
 
-## Deployment Steps
+### What this means for the `site_setting` table migration:
 
-1. **Push to GitHub**:
-   ```bash
-   git add apps/server/src/plugins/content/
-   git add apps/server/src/vendure-config.ts
-   git commit -m "feat: add ContentPlugin for banner management
+Migration `1783526928440-ContentPlugin.ts` creates the `site_setting` table (SEO/meta/social settings).
 
-   - Create ContentPlugin with GraphQL schema extensions
-   - Expose banners query on shop API
-   - Add admin CRUD mutations for banner management
-   - Fix 'Cannot query field banners' error on Render deployment"
-   git push origin main
-   ```
+When your SEO branch is **merged into `main`** and pushed:
+1. CI pulls the new migration file via `git pull`
+2. Backend build compiles it into `dist/migrations/`
+3. `runMigrations()` runs **before** `bootstrap()` on PM2 restart
+4. TypeORM checks its internal `migrations` table — if this migration hasn't run yet on production DB, it executes `up()` automatically
 
-2. **Render Auto-Deployment**:
-   - Render will detect the push and automatically trigger a build
-   - The new ContentPlugin will be compiled during `npm run build:server`
-   - Monitor the deployment logs for success
+✅ **You do NOT need to run the migration separately.**
 
-3. **Verification** (after deployment):
-   - Dashboard: https://khukuri-ecommerce.onrender.com/dashboard/
-   - GraphQL Playground: https://khukuri-ecommerce.onrender.com/shop-api
-   - Query:
-     ```graphql
-     query {
-       banners {
-         id
-         title
-         image { preview }
-       }
-     }
-     ```
+> TypeORM tracks which migrations have already run. It will never re-run a migration that already succeeded.
 
-## Expected Results After Deployment
+---
 
-✅ Shop API will have `banners` query available  
-✅ Frontend hero section will fetch and display banners  
-✅ Admin dashboard can manage banners (create/update/delete)  
-✅ Image associations properly loaded with Asset relations  
+## Steps to Deploy SEO Changes to Production
 
-## Rollback (if needed)
-If there are issues after deployment, revert the commit:
+### 1. Make sure your SEO branch builds cleanly
+
 ```bash
-git revert <commit-hash>
+npm run build -w server
+npm run build -w storefront
+```
+
+### 2. Merge into main and push
+
+```bash
+git checkout main
+git merge your-seo-branch
 git push origin main
 ```
 
-## Testing Checklist
-- [ ] Local build succeeds: `npm run build:server`
-- [ ] Local server starts: `npm run dev:server`
-- [ ] Shop API query works: `{ banners { id title } }`
-- [ ] Admin can create banner
-- [ ] Frontend displays banners
-- [ ] Render deployment completes
-- [ ] Render shop API query returns banners
-- [ ] Frontend on Vercel displays banners
+### 3. CI/CD triggers automatically
+
+Monitor at: **GitHub → Repository → Actions tab**
+
+Full pipeline time: ~3–5 minutes
+
+### 4. Verify on production after deploy
+
+- https://himalayankhukuri.com — site loads correctly
+- `GET https://himalayankhukuri.com/api/settings` — returns JSON with site settings (confirms `site_setting` table was created)
+- Admin dashboard → Settings tab — loads without error
+
+---
+
+## PM2 Process Map
+
+| Process              | Port | Description             |
+|----------------------|------|-------------------------|
+| `vendure-backend`    | 3002 | Vendure GraphQL + Admin |
+| `vendure-worker`     | —    | Background job queue    |
+| `khukuri-storefront` | 3001 | Next.js storefront      |
+
+Public traffic → Nginx → ports 3001 / 3002
+
+---
+
+## Cache Tags Auto-Busted After Every Deploy
+
+```json
+["featured-products", "collections", "banners", "products"]
+```
+
+> The `settings` cache tag is revalidated separately when site settings are saved from the admin dashboard.
+
+---
+
+## If Something Goes Wrong
+
+**Check PM2 logs on the server:**
+```bash
+npx pm2 logs vendure-backend --lines 100
+npx pm2 logs khukuri-storefront --lines 100
+```
+
+**Check migration status:**
+```bash
+# In the DB, inspect the migrations table
+SELECT * FROM migrations ORDER BY timestamp DESC LIMIT 10;
+```
+
+**Emergency rollback:**
+```bash
+git revert <commit-hash>
+git push origin main
+# CI/CD redeploys automatically
+```
+
+For database migration rollback, SSH into server and run the `down()` migration manually.

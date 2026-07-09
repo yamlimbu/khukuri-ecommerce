@@ -43,8 +43,115 @@ const getAuthToken = () => {
     if (typeof window === 'undefined') {
         return null;
     }
-    return window.localStorage.getItem('vendure-auth-token');
+    return window.localStorage.getItem('vendure-session-token') || window.localStorage.getItem('vendure-auth-token');
 };
+
+// Global DOM adjustments for Admin UI: Hide Header/Footer and apply custom favicon
+if (typeof document !== 'undefined') {
+    // 1. Inject global CSS for header hiding
+    const styleHeader = document.createElement('style');
+    styleHeader.innerHTML = `
+        /* Hide Channel selection and language switch in sidebar header */
+        [data-sidebar="header"] {
+            display: none !important;
+        }
+    `;
+    document.head.appendChild(styleHeader);
+
+    // Function to apply/remove footer hiding style
+    const applyFooterStyle = (shouldHide: boolean) => {
+        let styleEl = document.getElementById('custom-footer-style');
+        if (shouldHide) {
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'custom-footer-style';
+                styleEl.innerHTML = `
+                    /* Hide profile, theme, and logout in sidebar footer */
+                    [data-sidebar="footer"] {
+                        display: none !important;
+                    }
+                `;
+                document.head.appendChild(styleEl);
+            }
+        } else {
+            if (styleEl) {
+                styleEl.remove();
+            }
+        }
+    };
+
+    // Initialize as hidden
+    applyFooterStyle(true);
+
+    const checkSuperAdmin = () => {
+        const token = getAuthToken();
+        if (!token) {
+            applyFooterStyle(true);
+            window.sessionStorage.removeItem('isAdminSuperAdmin');
+            return;
+        }
+
+        const cached = window.sessionStorage.getItem('isAdminSuperAdmin');
+        if (cached === 'true') {
+            applyFooterStyle(false);
+            return;
+        } else if (cached === 'false') {
+            applyFooterStyle(true);
+            return;
+        }
+
+        fetch('/admin-api', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                query: `
+                    query GetCurrentUserPermissions {
+                        me {
+                            channels {
+                                permissions
+                            }
+                        }
+                    }
+                `
+            }),
+        })
+        .then(res => res.json())
+        .then(res => {
+            const permissions: string[] = res.data?.me?.channels?.flatMap((c: any) => c.permissions) || [];
+            const isSuperAdmin = permissions.includes('SuperAdmin');
+            window.sessionStorage.setItem('isAdminSuperAdmin', isSuperAdmin ? 'true' : 'false');
+            applyFooterStyle(!isSuperAdmin);
+        })
+        .catch(err => {
+            console.error('Failed to fetch user permissions:', err);
+        });
+    };
+
+    // Run check immediately and periodically to handle logins/logouts
+    checkSuperAdmin();
+    setInterval(checkSuperAdmin, 1000);
+
+    // 2. Fetch favicon dynamically from /api/settings and update the document head
+    fetch('/api/settings')
+        .then(res => res.json())
+        .then(data => {
+            if (data?.favicon?.preview) {
+                // Remove existing favicons
+                const existingFavicons = document.querySelectorAll("link[rel*='icon']");
+                existingFavicons.forEach(el => el.remove());
+
+                // Add new configured favicon
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                link.href = data.favicon.preview;
+                document.head.appendChild(link);
+            }
+        })
+        .catch(err => console.error('Failed to update admin dashboard favicon:', err));
+}
 
 const adminApi = async <T,>(query: string, variables?: Record<string, any>): Promise<T> => {
     const headers: Record<string, string> = {
