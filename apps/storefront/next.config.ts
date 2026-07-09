@@ -47,6 +47,21 @@ const nextConfig: NextConfig = {
   experimental: {
     rootParams: true,
   },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.himalayankhukuri.com',
+          },
+        ],
+        destination: 'https://himalayankhukuri.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

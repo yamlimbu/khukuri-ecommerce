@@ -62,12 +62,23 @@ export interface SiteSettings {
     metaTitle: string | null;
     metaDescription: string | null;
     metaKeywords: string | null;
+    /** Primary logo — used in navbar, footer. */
     logo: { id: string; preview: string; source: string } | null;
     favicon: { id: string; preview: string; source: string } | null;
+    /**
+     * Dedicated Open Graph / social sharing image.
+     * Falls back to `logo` when absent.
+     */
+    ogImage: { id: string; preview: string; source: string } | null;
     facebookUrl: string | null;
     instagramUrl: string | null;
     tiktokUrl: string | null;
     whatsappUrl: string | null;
+    /**
+     * Preferred canonical origin (e.g. "https://himalayankhukuri.com").
+     * When set in the admin it overrides NEXT_PUBLIC_SITE_URL for canonical/OG URLs.
+     */
+    canonicalUrl: string | null;
 }
 
 const SITE_SETTINGS_FALLBACK: SiteSettings = {
@@ -79,16 +90,18 @@ const SITE_SETTINGS_FALLBACK: SiteSettings = {
     metaKeywords: 'kukri, khukuri, nepal, handmade kukri, gurkha knife, forged blade',
     logo: null,
     favicon: null,
+    ogImage: null,
     facebookUrl: null,
     instagramUrl: null,
     tiktokUrl: null,
     whatsappUrl: null,
+    canonicalUrl: null,
 };
 
 /**
- * Fetch site-wide settings (logo, favicon, meta, social links) and cache them
- * under the 'settings' tag. The Vendure server calls revalidateTag('settings')
- * automatically whenever the admin saves new settings, so this cache stays fresh.
+ * Fetch site-wide settings (logo, favicon, meta, social links, OG image) and
+ * cache them under the 'settings' tag. The Vendure server fires
+ * revalidateTag('settings') whenever the admin saves new settings.
  */
 export async function getSiteSettings(): Promise<SiteSettings> {
     'use cache';
@@ -113,6 +126,10 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         }
 
         const data = await res.json();
+
+        // ogImage: prefer the dedicated ogImage field; fall back to logo.
+        const ogImage = data.ogImage ?? data.logo ?? null;
+
         return {
             id: data.id ?? '',
             siteName: data.siteName || SITE_SETTINGS_FALLBACK.siteName,
@@ -121,10 +138,12 @@ export async function getSiteSettings(): Promise<SiteSettings> {
             metaKeywords: data.metaKeywords || null,
             logo: data.logo ?? null,
             favicon: data.favicon ?? null,
+            ogImage,
             facebookUrl: data.facebookUrl ?? null,
             instagramUrl: data.instagramUrl ?? null,
             tiktokUrl: data.tiktokUrl ?? null,
             whatsappUrl: data.whatsappUrl ?? null,
+            canonicalUrl: data.canonicalUrl ?? null,
         };
     } catch (err) {
         console.warn('[getSiteSettings] Fetch error — using fallback:', err);

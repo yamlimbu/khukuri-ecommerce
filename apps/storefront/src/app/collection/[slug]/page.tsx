@@ -9,17 +9,17 @@ import { ProductGridSkeleton } from '@/components/shared/product-grid-skeleton';
 import { buildSearchInput, getCurrentPage } from '@/lib/search-helpers';
 import { cacheLife, cacheTag } from 'next/cache';
 import {
-    SITE_NAME,
     truncateDescription,
-    buildCanonicalUrl,
-    buildOgImages,
+    buildPageMetadata,
+    buildBreadcrumbJsonLd,
+    buildCollectionJsonLd,
 } from '@/lib/metadata';
+import { getSiteSettings } from '@/lib/vendure/cached';
+import { notFound } from 'next/navigation';
 
 async function getCollectionProducts(slug: string, searchParams: { [key: string]: string | string[] | undefined }) {
     'use cache';
     cacheLife('hours');
-    // 'collections' tag ensures a slug rename busts this page even if old slug
-    // is no longer in the CollectionEvent entity
     cacheTag(`collection-${slug}`, 'collections');
 
     return query(SearchProductsQuery, {
@@ -30,7 +30,7 @@ async function getCollectionProducts(slug: string, searchParams: { [key: string]
     });
 }
 
-async function getCollectionMetadata(slug: string) {
+async function getCollectionData(slug: string) {
     'use cache';
     cacheLife('hours');
     cacheTag(`collection-${slug}`, 'collections');
@@ -45,67 +45,101 @@ export async function generateMetadata({
     params,
 }: PageProps<'/collection/[slug]'>): Promise<Metadata> {
     const { slug } = await params;
-    const result = await getCollectionMetadata(slug);
+    const [result, settings] = await Promise.all([
+        getCollectionData(slug),
+        getSiteSettings(),
+    ]);
     const collection = result.data?.collection;
 
     if (!collection) {
-        return {
-            title: 'Collection Not Found',
-        };
+        return { title: 'Collection Not Found' };
     }
 
     const description =
         truncateDescription(collection.description) ||
-        `Browse our ${collection.name} collection at ${SITE_NAME}`;
+        `Browse our ${collection.name} collection — authentic hand-forged Khukuris from Nepal.`;
 
-    return {
+    const ogImageUrl = collection.featuredAsset?.preview
+        ? normalizeAssetUrl(collection.featuredAsset.preview, collection.featuredAsset.updatedAt)
+        : null;
+
+    return buildPageMetadata(settings, {
         title: collection.name,
         description,
-        alternates: {
-            canonical: buildCanonicalUrl(`/collection/${collection.slug}`),
-        },
-        openGraph: {
-            title: collection.name,
-            description,
-            type: 'website',
-            url: buildCanonicalUrl(`/collection/${collection.slug}`),
-            images: buildOgImages(collection.featuredAsset?.preview, collection.name),
-        },
-        twitter: {
-            card: 'summary_large_image',
-            title: collection.name,
-            description,
-            images: collection.featuredAsset?.preview
-                ? [normalizeAssetUrl(collection.featuredAsset.preview, collection.featuredAsset.updatedAt)]
-                : undefined,
-        },
-    };
+        canonicalPath: `/collection/${collection.slug}`,
+        ogImageUrl,
+        ogImageAlt: collection.name,
+    });
 }
 
-export default async function CollectionPage({params, searchParams}: PageProps<'/collection/[slug]'>) {
+export default async function CollectionPage({ params, searchParams }: PageProps<'/collection/[slug]'>) {
     const { slug } = await params;
     const searchParamsResolved = await searchParams;
     const page = getCurrentPage(searchParamsResolved);
 
+    const [collectionResult, settings] = await Promise.all([
+        getCollectionData(slug),
+        getSiteSettings(),
+    ]);
     const productDataPromise = getCollectionProducts(slug, searchParamsResolved);
 
-    return (
-        <div className="container mx-auto px-4 py-8 mt-16">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Filters Sidebar */}
-                <aside className="lg:col-span-1">
-                    <Suspense fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}>
-                        <FacetFilters productDataPromise={productDataPromise} />
-                    </Suspense>
-                </aside>
+    const collection = collectionResult.data?.collection;
+    if (!collection) notFound();
 
-                {/* Product Grid */}
-                <div className="lg:col-span-3">
-                    <Suspense fallback={<ProductGridSkeleton />}>
-                        <ProductGrid productDataPromise={productDataPromise} currentPage={page} take={12} />
-                    </Suspense>
+    // JSON-LD schemas
+    const breadcrumbJsonLd = buildBreadcrumbJsonLd(settings, [
+        { name: 'Home', path: '/' },
+        { name: 'Collections', path: '/search' },
+        { name: collection.name, path: `/collection/${collection.slug}` },
+    ]);
+
+    const collectionJsonLd = buildCollectionJsonLd(settings, {
+        name: collection.name,
+        slug: collection.slug,
+        description: collection.description,
+    });
+
+    return (
+        <>
+            {/* Structured data */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
+            />
+
+            <div className="container mx-auto px-4 py-8 mt-16">
+                {/* Collection header with H1 */}
+                <header className="mb-8">
+                    <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-2">
+                        {collection.name}
+                    </h1>
+                    {collection.description && (
+                        <p className="text-muted-foreground max-w-2xl">
+                            {truncateDescription(collection.description, 200)}
+                        </p>
+                    )}
+                </header>
+
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    {/* Filters Sidebar */}
+                    <aside className="lg:col-span-1" aria-label="Product filters">
+                        <Suspense fallback={<div className="h-64 animate-pulse bg-muted rounded-lg" />}>
+                            <FacetFilters productDataPromise={productDataPromise} />
+                        </Suspense>
+                    </aside>
+
+                    {/* Product Grid */}
+                    <main className="lg:col-span-3">
+                        <Suspense fallback={<ProductGridSkeleton />}>
+                            <ProductGrid productDataPromise={productDataPromise} currentPage={page} take={12} />
+                        </Suspense>
+                    </main>
                 </div>
             </div>
-        </div>
+        </>
     );
 }

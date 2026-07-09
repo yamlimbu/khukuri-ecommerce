@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { SITE_URL } from "@/lib/metadata";
+import { SITE_URL, buildOrganizationJsonLd, buildWebSiteJsonLd } from "@/lib/metadata";
 import { getSiteSettings } from "@/lib/vendure/cached";
 import Script from "next/script";
 
@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 
 const GA_MEASUREMENT_ID = "G-XKKJB152D8";
 
-// Fallback constants
+// Fallback constants — only used when Vendure admin has no values set
 const FALLBACK_SITE_NAME = "Himalayan Khukuri House";
 const FALLBACK_META_TITLE = "Himalayan Khukuri House - Finest Kukris from Nepal";
 const FALLBACK_META_DESCRIPTION =
@@ -37,9 +37,14 @@ export async function generateMetadata(): Promise<Metadata> {
     const metaTitle = settings.metaTitle || FALLBACK_META_TITLE;
     const metaDescription = settings.metaDescription || FALLBACK_META_DESCRIPTION;
     const metaKeywords = settings.metaKeywords || FALLBACK_META_KEYWORDS;
-    const logoUrl = settings.logo?.preview ?? null;
 
-    // Build favicon metadata
+    // Preferred canonical base URL: admin > env var
+    const siteUrl = settings.canonicalUrl?.replace(/\/$/, '') || SITE_URL.replace(/\/$/, '');
+
+    // OG image: admin ogImage → admin logo → none
+    const ogImageUrl = settings.ogImage?.preview ?? settings.logo?.preview ?? null;
+
+    // Favicon: admin favicon → local /favicon.ico
     const icons: Metadata["icons"] = settings.favicon?.preview
         ? {
               icon: settings.favicon.preview,
@@ -50,7 +55,7 @@ export async function generateMetadata(): Promise<Metadata> {
           };
 
     return {
-        metadataBase: new URL(SITE_URL),
+        metadataBase: new URL(siteUrl),
         title: {
             default: metaTitle,
             template: `%s | ${siteName}`,
@@ -59,7 +64,7 @@ export async function generateMetadata(): Promise<Metadata> {
         keywords: metaKeywords,
         icons,
         alternates: {
-            canonical: SITE_URL,
+            canonical: siteUrl,
         },
         openGraph: {
             type: "website",
@@ -67,11 +72,13 @@ export async function generateMetadata(): Promise<Metadata> {
             locale: "en_US",
             title: metaTitle,
             description: metaDescription,
-            url: SITE_URL,
-            ...(logoUrl && {
+            url: siteUrl,
+            ...(ogImageUrl && {
                 images: [
                     {
-                        url: logoUrl,
+                        url: ogImageUrl,
+                        width: 1200,
+                        height: 630,
                         alt: siteName,
                     },
                 ],
@@ -81,7 +88,7 @@ export async function generateMetadata(): Promise<Metadata> {
             card: "summary_large_image",
             title: metaTitle,
             description: metaDescription,
-            ...(logoUrl && { images: [logoUrl] }),
+            ...(ogImageUrl && { images: [ogImageUrl] }),
         },
         robots: {
             index: true,
@@ -94,6 +101,15 @@ export async function generateMetadata(): Promise<Metadata> {
                 "max-snippet": -1,
             },
         },
+        // Google Search Console & Bing verification (set via env vars)
+        ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION && {
+            verification: {
+                google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+                ...(process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION && {
+                    other: { 'msvalidate.01': process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION },
+                }),
+            },
+        }),
     };
 }
 
@@ -107,10 +123,25 @@ export const viewport: Viewport = {
     ],
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+    // Fetch settings once; used for global JSON-LD
+    const settings = await getSiteSettings();
+    const orgJsonLd = buildOrganizationJsonLd(settings);
+    const websiteJsonLd = buildWebSiteJsonLd(settings);
+
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
+                {/* Global structured data — Organization + WebSite */}
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+                />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+                />
+
                 {/* Google Analytics */}
                 <Script
                     src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}

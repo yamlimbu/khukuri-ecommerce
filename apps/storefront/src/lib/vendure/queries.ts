@@ -488,3 +488,42 @@ export const GetPageBySlugQuery = graphql(`
         }
     }
 `);
+
+// ---------------------------------------------------------------------------
+// Sitemap queries — minimal fields, slugs + timestamps only
+// ---------------------------------------------------------------------------
+
+export const GetAllProductSlugsQuery = graphql(`
+    query GetAllProductSlugs {
+        search(input: { take: 1000, groupByProduct: true }) {
+            items {
+                slug
+                productVariantAsset {
+                    updatedAt
+                }
+            }
+        }
+    }
+`);
+
+export const GetAllCollectionSlugsQuery = graphql(`
+    query GetAllCollectionSlugs {
+        collections(options: { take: 200 }) {
+            items {
+                slug
+                updatedAt
+            }
+        }
+    }
+`);
+
+export const GetAllPageSlugsQuery = graphql(`
+    query GetAllPageSlugs {
+        pages {
+            items {
+                slug
+                updatedAt
+            }
+        }
+    }
+`);
