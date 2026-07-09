@@ -1,5 +1,5 @@
-import { Controller, Get, Put, Body, Req, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { RequestContextService, Permission, RequestContext, Ctx, Allow } from '@vendure/core';
+import { Controller, Get, Put, Body, Req, ForbiddenException, BadRequestException, UseGuards } from '@nestjs/common';
+import { RequestContextService, Permission, RequestContext, Ctx, Allow, AuthGuard } from '@vendure/core';
 import { Request } from 'express';
 import { SiteSettingService } from '../services/site-setting.service';
 
@@ -78,6 +78,7 @@ export class SiteSettingController {
     }
 
     @Put()
+    @UseGuards(AuthGuard)
     @Allow(Permission.UpdateSettings)
     async updateSettings(@Ctx() ctx: RequestContext, @Req() req: Request, @Body() body: any) {
         // Map snake_case to camelCase

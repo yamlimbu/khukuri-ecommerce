@@ -837,9 +837,9 @@ const SettingsPage = () => {
                 credentials: 'include',
             });
 
-            const result = await response.json();
+            const result = await response.json().catch(() => ({}));
             if (!response.ok) {
-                throw new Error(result.message || 'Failed to save settings');
+                throw new Error(result.message || `Failed to save settings: ${response.statusText || 'Status ' + response.status}`);
             }
 
             alert('Settings saved successfully!');
