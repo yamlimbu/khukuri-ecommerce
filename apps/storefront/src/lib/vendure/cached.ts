@@ -97,6 +97,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
 
     const apiUrl =
         process.env.VENDURE_INTERNAL_API_URL ||
+        process.env.VENDURE_SHOP_API_URL?.replace('/shop-api', '') ||
         process.env.NEXT_PUBLIC_VENDURE_SHOP_API_URL?.replace('/shop-api', '') ||
         'http://localhost:3000';
 
